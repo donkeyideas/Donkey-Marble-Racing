@@ -1,0 +1,19 @@
+{
+    "name": "MarbleRace.Runtime",
+    "rootNamespace": "MarbleRace.Runtime",
+    "references": [
+        "MarbleRace.Core",
+        "MarbleRace.Events",
+        "MarbleRace.Data",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

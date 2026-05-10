@@ -1,0 +1,23 @@
+{
+    "name": "MarbleRace.Editor",
+    "rootNamespace": "MarbleRace.Editor",
+    "references": [
+        "MarbleRace.Core",
+        "MarbleRace.Events",
+        "MarbleRace.Data",
+        "MarbleRace.Runtime",
+        "Unity.TextMeshPro",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

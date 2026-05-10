@@ -1,0 +1,133 @@
+using UnityEngine;
+using MarbleRace.Data;
+
+public static class TrackGenerator
+{
+    private static PhysicsMaterial _trackPhysMat;
+
+    public static GameObject GenerateTrack(TrackType type, PhysicsMaterial trackPhysMat)
+    {
+        _trackPhysMat = trackPhysMat;
+        return BuildCurvedTrack();
+    }
+
+    // Sample a smooth parametric curve at many points so marbles never hit sharp angles
+    static Vector3 CurvePoint(float t)
+    {
+        // t goes from 0 to 1 along the entire track length
+        float trackLength = 80f;
+        float z = t * trackLength;
+        float y = Mathf.Lerp(3.0f, -4.5f, t); // gentle downhill slope
+        // Sine wave for S-curves: 1.5 cycles = 3 curves, amplitude 2
+        float x = Mathf.Sin(t * Mathf.PI * 3f) * 2f;
+        return new Vector3(x, y, z);
+    }
+
+    static GameObject BuildCurvedTrack()
+    {
+        var track = new GameObject("Track");
+
+        var floorMat = MakeMat("FloorMat", new Color(0.2f, 0.22f, 0.35f));
+        var wallMat = MakeMat("WallMat", new Color(0.1f, 0.1f, 0.15f), 0.5f, 0.7f);
+
+        int segmentCount = 40;
+        float trackWidth = 5f;
+        float wallHeight = 3.5f;
+
+        // Sample the curve at many points for smooth transitions
+        Vector3[] points = new Vector3[segmentCount + 1];
+        for (int i = 0; i <= segmentCount; i++)
+        {
+            float t = (float)i / segmentCount;
+            points[i] = CurvePoint(t);
+        }
+
+        // Build a short segment between each consecutive pair of points
+        for (int i = 0; i < segmentCount; i++)
+        {
+            Vector3 start = points[i];
+            Vector3 end = points[i + 1];
+            Vector3 center = (start + end) / 2f;
+            Vector3 direction = (end - start).normalized;
+            float length = Vector3.Distance(start, end) + 0.15f; // tiny overlap to seal gaps
+
+            Quaternion rotation = Quaternion.LookRotation(direction, Vector3.up);
+
+            // Floor slab
+            var floor = MakeCube(track, $"Floor_{i}", center, new Vector3(trackWidth, 0.5f, length), floorMat);
+            floor.transform.rotation = rotation;
+
+            // Left wall
+            Vector3 leftOffset = rotation * new Vector3(-(trackWidth / 2f + 0.25f), wallHeight / 2f, 0f);
+            var wallL = MakeCube(track, $"WallL_{i}", center + leftOffset, new Vector3(0.5f, wallHeight, length), wallMat);
+            wallL.transform.rotation = rotation;
+
+            // Right wall
+            Vector3 rightOffset = rotation * new Vector3((trackWidth / 2f + 0.25f), wallHeight / 2f, 0f);
+            var wallR = MakeCube(track, $"WallR_{i}", center + rightOffset, new Vector3(0.5f, wallHeight, length), wallMat);
+            wallR.transform.rotation = rotation;
+        }
+
+        // BUCKET at the end to catch marbles
+        Vector3 lastPoint = points[segmentCount];
+        Vector3 bucketCenter = lastPoint + new Vector3(0f, -2f, 2f);
+        MakeCube(track, "BucketFloor", bucketCenter, new Vector3(7, 0.5f, 5), floorMat);
+        MakeCube(track, "BucketBack", bucketCenter + new Vector3(0, 2f, 2.75f), new Vector3(7, 4f, 0.5f), wallMat);
+        MakeCube(track, "BucketLeft", bucketCenter + new Vector3(-3.75f, 2f, 0), new Vector3(0.5f, 4f, 5), wallMat);
+        MakeCube(track, "BucketRight", bucketCenter + new Vector3(3.75f, 2f, 0), new Vector3(0.5f, 4f, 5), wallMat);
+
+        return track;
+    }
+
+    static GameObject MakeCube(GameObject parent, string name, Vector3 pos, Vector3 scale, Material mat)
+    {
+        var obj = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        obj.name = name;
+        obj.transform.parent = parent.transform;
+        obj.transform.position = pos;
+        obj.transform.localScale = scale;
+
+        if (_trackPhysMat != null)
+        {
+            var col = obj.GetComponent<BoxCollider>();
+            if (col != null) col.material = _trackPhysMat;
+        }
+
+        if (mat != null)
+            obj.GetComponent<Renderer>().material = mat;
+
+        return obj;
+    }
+
+    static Material MakeMat(string name, Color color, float metallic = 0.3f, float smoothness = 0.6f)
+    {
+        var shader = Shader.Find("Universal Render Pipeline/Lit");
+        if (shader == null) shader = Shader.Find("Standard");
+        var mat = new Material(shader);
+        mat.name = name;
+        mat.color = color;
+        mat.SetFloat("_Metallic", metallic);
+        mat.SetFloat("_Smoothness", smoothness);
+        return mat;
+    }
+
+    public static Vector3 GetFinishLinePosition(TrackType type)
+    {
+        // Bucket is 2 below last curve point (y=-4.5) at z=82
+        return new Vector3(0f, -6.5f, 82f);
+    }
+
+    public static Vector3 GetStartGatePosition(TrackType type)
+    {
+        // Gate just above the surface at the start (curve starts at y=3.0)
+        Vector3 p = CurvePoint(0.05f); // slightly ahead of start
+        return new Vector3(p.x, 3.75f, p.z);
+    }
+
+    // Surface height at the start of the track (for spawn points)
+    public static float GetStartSurfaceY()
+    {
+        // Curve starts at y=3.0, floor is 0.5 thick, surface = 3.0 + 0.25
+        return 3.25f;
+    }
+}

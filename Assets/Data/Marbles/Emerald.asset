@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bb5d7dd31f81b6e4da108888ba3eb8f0, type: 3}
+  m_Name: Emerald
+  m_EditorClassIdentifier: MarbleRace.Data::MarbleRace.Data.MarbleData
+  marbleId: emerald
+  marbleName: Emerald
+  marbleColor: {r: 0.1, g: 0.8, b: 0.2, a: 1}
+  rarity: 0
+  massMultiplier: 0.7
+  dragMultiplier: 0.12
+  bounciness: 0.8
+  nudgeStrength: 1.3
+  marbleMaterial: {fileID: 0}
+  trailPrefab: {fileID: 0}
+  description: 
+  icon: {fileID: 0}
