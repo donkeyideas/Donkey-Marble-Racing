@@ -252,6 +252,7 @@ public class GameSetupWizard : EditorWindow
         // Scripts
         var controller = marble.AddComponent<MarbleController>();
         marble.AddComponent<MarbleIdentity>();
+        marble.AddComponent<MarbleParticles>();
 
         // Save prefab
         var prefab = PrefabUtility.SaveAsPrefabAsset(marble, "Assets/Prefabs/Marble.prefab");
@@ -471,6 +472,10 @@ public class GameSetupWizard : EditorWindow
         // uiManager will be wired after UI is created
         gmSO.ApplyModifiedProperties();
 
+        // --- RaceStatsManager ---
+        var statsObj = new GameObject("RaceStatsManager");
+        statsObj.AddComponent<RaceStatsManager>();
+
         // Wire FinishLine
         var finishLine = Object.FindAnyObjectByType<FinishLine>();
         if (finishLine != null)
@@ -478,6 +483,14 @@ public class GameSetupWizard : EditorWindow
             var flSO = new SerializedObject(finishLine);
             flSO.FindProperty("raceManager").objectReferenceValue = refs.raceManager;
             flSO.ApplyModifiedProperties();
+        }
+
+        // Wire finishLine reference on RaceManager
+        if (finishLine != null)
+        {
+            var rmSO2 = new SerializedObject(refs.raceManager);
+            rmSO2.FindProperty("finishLine").objectReferenceValue = finishLine;
+            rmSO2.ApplyModifiedProperties();
         }
 
         return refs;
@@ -505,6 +518,8 @@ public class GameSetupWizard : EditorWindow
             new Color(0.1f, 0.7f, 0.2f));
         var dailyBtn = CreateButton(mainMenu.transform, "DailyRewardButton", "Daily Reward", new Vector2(0, -160), new Vector2(300, 60),
             new Color(0.9f, 0.6f, 0.1f));
+        var statsBtn = CreateButton(mainMenu.transform, "StatsButton", "STATS", new Vector2(0, -260), new Vector2(300, 60),
+            new Color(0.3f, 0.5f, 0.9f));
 
         var mainMenuScript = mainMenu.AddComponent<MainMenuPanel>();
         var mmSO = new SerializedObject(mainMenuScript);
@@ -663,6 +678,27 @@ public class GameSetupWizard : EditorWindow
         rpSO.FindProperty("mainMenuButton").objectReferenceValue = menuBtn.GetComponent<Button>();
         rpSO.ApplyModifiedProperties();
 
+        // --- Stats Panel ---
+        var statsPanel = CreatePanel(canvasObj.transform, "StatsPanel", new Color(0.03f, 0.03f, 0.08f, 0.97f));
+        statsPanel.SetActive(false);
+        var statsTitleText = CreateText(statsPanel.transform, "StatsTitle", "STATISTICS", 42, new Vector2(0, 400), Color.white);
+        var generalStatsText = CreateText(statsPanel.transform, "GeneralStats", "", 22, new Vector2(-200, 100), Color.white);
+        generalStatsText.GetComponent<RectTransform>().sizeDelta = new Vector2(400, 600);
+        var marbleRankingsText = CreateText(statsPanel.transform, "MarbleRankings", "", 20, new Vector2(200, 100), Color.white);
+        marbleRankingsText.GetComponent<RectTransform>().sizeDelta = new Vector2(400, 600);
+        var closeStatsBtn = CreateButton(statsPanel.transform, "CloseStatsButton", "CLOSE", new Vector2(0, -420), new Vector2(250, 60),
+            new Color(0.5f, 0.2f, 0.2f));
+
+        var statsPanelScript = statsPanel.AddComponent<StatsPanel>();
+        var spSO = new SerializedObject(statsPanelScript);
+        spSO.FindProperty("statsText").objectReferenceValue = generalStatsText.GetComponent<TMP_Text>();
+        spSO.FindProperty("marbleStatsText").objectReferenceValue = marbleRankingsText.GetComponent<TMP_Text>();
+        spSO.FindProperty("closeButton").objectReferenceValue = closeStatsBtn.GetComponent<Button>();
+        spSO.ApplyModifiedProperties();
+
+        // Wire stats button to show stats panel
+        statsBtn.GetComponent<Button>().onClick.AddListener(() => statsPanelScript.Show());
+
         // --- Countdown Overlay ---
         var countdownOverlay = new GameObject("CountdownOverlay");
         var coRT = countdownOverlay.AddComponent<RectTransform>();
@@ -745,6 +781,15 @@ public class GameSetupWizard : EditorWindow
         var rmSO = new SerializedObject(managers.raceManager);
         rmSO.FindProperty("raceCamera").objectReferenceValue = raceCamera;
         rmSO.ApplyModifiedProperties();
+
+        // Wire RaceCamera to FinishLine for celebration
+        var fl = Object.FindAnyObjectByType<FinishLine>();
+        if (fl != null)
+        {
+            var flSO = new SerializedObject(fl);
+            flSO.FindProperty("raceCamera").objectReferenceValue = raceCamera;
+            flSO.ApplyModifiedProperties();
+        }
     }
 
     static void CreateHazards(TrackType trackType)

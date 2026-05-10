@@ -20,6 +20,7 @@ namespace MarbleRace.Runtime.Managers
         [Header("References")]
         [SerializeField] private MarbleSpawner marbleSpawner;
         [SerializeField] private StartGate startGate;
+        [SerializeField] private FinishLine finishLine;
         [SerializeField] private RaceHUD raceHUD;
         [SerializeField] private RaceCamera raceCamera;
 
@@ -53,6 +54,10 @@ namespace MarbleRace.Runtime.Managers
             // Close the start gate
             if (startGate != null)
                 startGate.Close();
+
+            // Reset finish line for new race
+            if (finishLine != null)
+                finishLine.ResetForNewRace();
 
             // Spawn new marbles
             _activeMarbles = marbleSpawner.SpawnMarbles(raceSettings.marbleCount, currentTrack);
@@ -94,6 +99,14 @@ namespace MarbleRace.Runtime.Managers
         public void EndRace()
         {
             _isRacing = false;
+
+            // Restore normal time (celebration sets slow-mo)
+            Time.timeScale = 1f;
+            Time.fixedDeltaTime = 0.02f;
+
+            // Reset camera
+            if (raceCamera != null)
+                raceCamera.ResetFinishMode();
 
             // Build result
             string winner = _finishOrder.Count > 0 ? _finishOrder[0] : GetLeadingMarbleId();

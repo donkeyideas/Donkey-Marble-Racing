@@ -1,4 +1,5 @@
 using UnityEngine;
+using MarbleRace.Core.Economy;
 using MarbleRace.Events;
 
 namespace MarbleRace.Runtime.Managers
@@ -116,9 +117,51 @@ namespace MarbleRace.Runtime.Managers
                     break;
                 case GameState.Results:
                     Time.timeScale = 1f;
+                    Time.fixedDeltaTime = 0.02f;
                     raceManager.EndRace();
+                    RecordRaceStats();
                     break;
             }
+        }
+
+        private void RecordRaceStats()
+        {
+            if (RaceStatsManager.Instance == null || raceManager.LastResult == null) return;
+
+            var result = raceManager.LastResult;
+            var pool = bettingManager.CurrentPool;
+
+            // Determine if player bet won
+            bool betWon = false;
+            int coinsChange = 0;
+
+            if (pool != null && pool.TotalPool > 0)
+            {
+                var payouts = bettingManager.ResolveBets(result.WinnerMarbleId);
+                foreach (var payout in payouts)
+                {
+                    if (payout.Won)
+                    {
+                        betWon = true;
+                        coinsChange = payout.Payout;
+                        // Add winnings to wallet
+                        if (economyManager != null)
+                            economyManager.AddCoins(payout.Payout);
+                    }
+                    else
+                    {
+                        coinsChange = -payout.BetAmount;
+                    }
+                }
+            }
+
+            RaceStatsManager.Instance.RecordRaceResult(
+                result.WinnerMarbleId,
+                result.FinishOrder,
+                result.RaceDuration,
+                betWon,
+                coinsChange
+            );
         }
 
         private void ExitState(GameState state)

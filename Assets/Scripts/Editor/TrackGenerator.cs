@@ -60,8 +60,8 @@ public static class TrackGenerator
     {
         var track = new GameObject("Track");
 
-        var floorMat = MakeMat("FloorMat", new Color(0.2f, 0.22f, 0.35f));
-        var wallMat = MakeMat("WallMat", new Color(0.1f, 0.1f, 0.15f), 0.5f, 0.7f);
+        var floorMat = MakeMat("FloorMat", new Color(0.15f, 0.18f, 0.3f), 0.4f, 0.7f);
+        var wallMat = MakeMat("WallMat", new Color(0.08f, 0.08f, 0.12f), 0.6f, 0.85f);
 
         int segmentCount = 40;
         float trackWidth = 5f;
@@ -101,9 +101,9 @@ public static class TrackGenerator
             wallR.transform.rotation = rotation;
         }
 
-        // OBSTACLES
-        var obstacleMat = MakeMat("ObstacleMat", new Color(0.9f, 0.15f, 0.1f), 0.7f, 0.3f);
-        var spinnerMat = MakeMat("SpinnerMat", new Color(1f, 0.6f, 0f), 0.8f, 0.5f);
+        // OBSTACLES — emissive glow so they stand out
+        var obstacleMat = MakeEmissiveMat("ObstacleMat", new Color(0.9f, 0.15f, 0.1f), new Color(1f, 0.2f, 0.05f), 1.5f, 0.7f, 0.3f);
+        var spinnerMat = MakeEmissiveMat("SpinnerMat", new Color(1f, 0.6f, 0f), new Color(1f, 0.5f, 0f), 2f, 0.8f, 0.5f);
 
         // Obstacle 1: Round bumper post at 1/3, offset right
         Vector3 obs1Pos = CurvePoint(0.33f) + new Vector3(0.8f, 0.6f, 0f);
@@ -159,7 +159,7 @@ public static class TrackGenerator
         SetHazardProperties(postB.GetComponent<TrackHazard>(), HazardType.Bumper, 2.5f, 0f);
 
         // Obstacle 4: Boost pad at 80% — green pad that launches marbles forward
-        var boostMat = MakeMat("BoostMat", new Color(0.1f, 0.9f, 0.3f), 0.2f, 0.9f);
+        var boostMat = MakeEmissiveMat("BoostMat", new Color(0.1f, 0.9f, 0.3f), new Color(0f, 1f, 0.3f), 2.5f, 0.2f, 0.9f);
         Vector3 boostPos = CurvePoint(0.8f) + new Vector3(0f, 0.3f, 0f);
         var boostPad = MakeCube(track, "BoostPad", boostPos, new Vector3(4f, 0.2f, 2f), boostMat);
         boostPad.GetComponent<BoxCollider>().isTrigger = true;
@@ -217,6 +217,21 @@ public static class TrackGenerator
         mat.color = color;
         mat.SetFloat("_Metallic", metallic);
         mat.SetFloat("_Smoothness", smoothness);
+        return mat;
+    }
+
+    static Material MakeEmissiveMat(string name, Color color, Color emissionColor, float intensity = 2f, float metallic = 0.5f, float smoothness = 0.8f)
+    {
+        var shader = Shader.Find("Universal Render Pipeline/Lit");
+        if (shader == null) shader = Shader.Find("Standard");
+        var mat = new Material(shader);
+        mat.name = name;
+        mat.color = color;
+        mat.SetFloat("_Metallic", metallic);
+        mat.SetFloat("_Smoothness", smoothness);
+        mat.EnableKeyword("_EMISSION");
+        mat.SetColor("_EmissionColor", emissionColor * intensity);
+        mat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
         return mat;
     }
 
