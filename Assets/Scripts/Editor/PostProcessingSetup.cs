@@ -1,19 +1,22 @@
 using UnityEngine;
 using UnityEditor;
 using UnityEngine.Rendering;
-using UnityEngine.Rendering.Universal;
 
 public static class PostProcessingSetup
 {
     public static void Setup(UnityEngine.Camera mainCam)
     {
-        // Enable post-processing on camera
-        var camData = mainCam.GetUniversalAdditionalCameraData();
-        if (camData != null)
+        // Enable post-processing on the camera via UniversalAdditionalCameraData
+        // Use reflection to avoid hard compile-time dependency on URP assembly
+        var urpCamDataType = System.Type.GetType("UnityEngine.Rendering.Universal.UniversalAdditionalCameraData, Unity.RenderPipelines.Universal.Runtime");
+        if (urpCamDataType != null)
         {
-            camData.renderPostProcessing = true;
-            camData.antialiasing = AntialiasingMode.SubpixelMorphologicalAntiAliasing;
-            camData.antialiasingQuality = AntialiasingQuality.High;
+            var camData = mainCam.GetComponent(urpCamDataType);
+            if (camData != null)
+            {
+                var renderPostProp = urpCamDataType.GetProperty("renderPostProcessing");
+                if (renderPostProp != null) renderPostProp.SetValue(camData, true);
+            }
         }
 
         // Create Global Volume
@@ -25,43 +28,72 @@ public static class PostProcessingSetup
         // Create Volume Profile asset
         var profile = ScriptableObject.CreateInstance<VolumeProfile>();
 
-        // Bloom
-        var bloom = profile.Add<Bloom>(true);
-        bloom.threshold.value = 0.9f;
-        bloom.threshold.overrideState = true;
-        bloom.intensity.value = 1.5f;
-        bloom.intensity.overrideState = true;
-        bloom.scatter.value = 0.7f;
-        bloom.scatter.overrideState = true;
-
-        // Vignette
-        var vignette = profile.Add<Vignette>(true);
-        vignette.intensity.value = 0.3f;
-        vignette.intensity.overrideState = true;
-        vignette.smoothness.value = 0.4f;
-        vignette.smoothness.overrideState = true;
-        vignette.color.value = new Color(0.05f, 0.0f, 0.1f);
-        vignette.color.overrideState = true;
-
-        // Color Adjustments
-        var colorAdj = profile.Add<ColorAdjustments>(true);
-        colorAdj.postExposure.value = 0.3f;
-        colorAdj.postExposure.overrideState = true;
-        colorAdj.contrast.value = 15f;
-        colorAdj.contrast.overrideState = true;
-        colorAdj.saturation.value = 10f;
-        colorAdj.saturation.overrideState = true;
-
-        // Film Grain (subtle)
-        var grain = profile.Add<FilmGrain>(true);
-        grain.intensity.value = 0.15f;
-        grain.intensity.overrideState = true;
+        // Use reflection to add URP-specific overrides (Bloom, Vignette, etc.)
+        AddBloom(profile);
+        AddVignette(profile);
+        AddColorAdjustments(profile);
+        AddFilmGrain(profile);
 
         // Save profile as asset
         string profilePath = "Assets/Data/PostProcessProfile.asset";
+        if (AssetDatabase.LoadAssetAtPath<VolumeProfile>(profilePath) != null)
+            AssetDatabase.DeleteAsset(profilePath);
         AssetDatabase.CreateAsset(profile, profilePath);
         volume.profile = profile;
 
         Debug.Log("[MarbleRace] Post-processing configured: Bloom, Vignette, Color Grading, Film Grain.");
+    }
+
+    static void AddBloom(VolumeProfile profile)
+    {
+        var bloomType = System.Type.GetType("UnityEngine.Rendering.Universal.Bloom, Unity.RenderPipelines.Universal.Runtime");
+        if (bloomType == null) return;
+        var bloom = profile.Add(bloomType, true);
+        SetVolumeParam(bloom, "threshold", 0.9f);
+        SetVolumeParam(bloom, "intensity", 1.5f);
+        SetVolumeParam(bloom, "scatter", 0.7f);
+    }
+
+    static void AddVignette(VolumeProfile profile)
+    {
+        var vignetteType = System.Type.GetType("UnityEngine.Rendering.Universal.Vignette, Unity.RenderPipelines.Universal.Runtime");
+        if (vignetteType == null) return;
+        var vignette = profile.Add(vignetteType, true);
+        SetVolumeParam(vignette, "intensity", 0.3f);
+        SetVolumeParam(vignette, "smoothness", 0.4f);
+    }
+
+    static void AddColorAdjustments(VolumeProfile profile)
+    {
+        var colorType = System.Type.GetType("UnityEngine.Rendering.Universal.ColorAdjustments, Unity.RenderPipelines.Universal.Runtime");
+        if (colorType == null) return;
+        var color = profile.Add(colorType, true);
+        SetVolumeParam(color, "postExposure", 0.3f);
+        SetVolumeParam(color, "contrast", 15f);
+        SetVolumeParam(color, "saturation", 10f);
+    }
+
+    static void AddFilmGrain(VolumeProfile profile)
+    {
+        var grainType = System.Type.GetType("UnityEngine.Rendering.Universal.FilmGrain, Unity.RenderPipelines.Universal.Runtime");
+        if (grainType == null) return;
+        var grain = profile.Add(grainType, true);
+        SetVolumeParam(grain, "intensity", 0.15f);
+    }
+
+    static void SetVolumeParam(VolumeComponent component, string fieldName, float value)
+    {
+        var field = component.GetType().GetField(fieldName);
+        if (field == null) return;
+        var param = field.GetValue(component);
+        if (param == null) return;
+
+        // Set overrideState = true
+        var overrideProp = param.GetType().GetProperty("overrideState");
+        if (overrideProp != null) overrideProp.SetValue(param, true);
+
+        // Set value
+        var valueProp = param.GetType().GetProperty("value");
+        if (valueProp != null) valueProp.SetValue(param, value);
     }
 }
