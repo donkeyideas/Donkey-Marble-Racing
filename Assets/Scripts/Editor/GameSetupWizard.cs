@@ -134,20 +134,27 @@ public class GameSetupWizard : EditorWindow
             new Color(0.3f, 0.3f, 0.35f)  // Dark Gray
         };
         // Physics personalities: mass, drag, bounce, nudge strength
+        // Balanced so no marble dominates — each has a tradeoff
         float[][] personalities = {
-            new[] { 1.0f, 0.08f, 0.6f, 1.0f },  // Crimson: balanced
-            new[] { 1.3f, 0.05f, 0.5f, 0.8f },  // Cobalt: heavy, low drag, steady
-            new[] { 0.7f, 0.12f, 0.8f, 1.3f },  // Emerald: light, bouncy, chaotic
-            new[] { 0.9f, 0.06f, 0.7f, 1.1f },  // Solar: fast, good bounce
-            new[] { 1.1f, 0.15f, 0.4f, 0.9f },  // Violet: heavy, high drag, stable
-            new[] { 0.6f, 0.04f, 0.9f, 1.4f },  // Frost: lightest, super bouncy
-            new[] { 1.2f, 0.07f, 0.5f, 1.2f },  // Blaze: heavy but strong nudge
-            new[] { 1.5f, 0.03f, 0.3f, 0.7f },  // Shadow: heaviest, low bounce, slow nudge
+            new[] { 1.0f, 0.08f, 0.6f, 1.0f },  // Crimson: balanced all-rounder
+            new[] { 1.1f, 0.06f, 0.5f, 1.0f },  // Cobalt: slightly heavy, low drag
+            new[] { 0.9f, 0.10f, 0.7f, 1.1f },  // Emerald: light but more drag
+            new[] { 1.0f, 0.07f, 0.6f, 1.05f }, // Solar: slight nudge edge
+            new[] { 1.1f, 0.09f, 0.5f, 0.95f }, // Violet: heavy, moderate drag
+            new[] { 0.9f, 0.09f, 0.7f, 1.0f },  // Frost: light but avg drag/nudge
+            new[] { 1.1f, 0.07f, 0.55f, 1.05f }, // Blaze: heavy, low drag, slight nudge
+            new[] { 1.2f, 0.06f, 0.5f, 0.95f }, // Shadow: heaviest, low drag compensates
         };
 
         var configs = new MarbleData[8];
         for (int i = 0; i < 8; i++)
         {
+            string path = $"Assets/Data/Marbles/{names[i]}.asset";
+            // Delete existing asset so stats are always fresh
+            var existing = AssetDatabase.LoadAssetAtPath<MarbleData>(path);
+            if (existing != null)
+                AssetDatabase.DeleteAsset(path);
+
             var data = ScriptableObject.CreateInstance<MarbleData>();
             data.marbleId = names[i].ToLower();
             data.marbleName = names[i];
@@ -157,7 +164,7 @@ public class GameSetupWizard : EditorWindow
             data.dragMultiplier = personalities[i][1];
             data.bounciness = personalities[i][2];
             data.nudgeStrength = personalities[i][3];
-            AssetDatabase.CreateAsset(data, $"Assets/Data/Marbles/{names[i]}.asset");
+            AssetDatabase.CreateAsset(data, path);
             configs[i] = data;
         }
         return configs;
@@ -526,15 +533,15 @@ public class GameSetupWizard : EditorWindow
         marbleContainerRT.anchoredPosition = new Vector2(0, 280);
         marbleContainerRT.sizeDelta = new Vector2(500, 200);
         var gridLayout = marbleContainer.AddComponent<GridLayoutGroup>();
-        gridLayout.cellSize = new Vector2(110, 40);
-        gridLayout.spacing = new Vector2(10, 10);
+        gridLayout.cellSize = new Vector2(70, 70);
+        gridLayout.spacing = new Vector2(12, 12);
         gridLayout.childAlignment = TextAnchor.MiddleCenter;
         gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
         gridLayout.constraintCount = 4;
 
-        // Marble button prefab (just a template button)
-        var marbleBtnPrefab = CreateButton(canvasObj.transform, "MarbleButtonPrefab", "Marble", Vector2.zero,
-            new Vector2(110, 40), new Color(0.3f, 0.3f, 0.4f));
+        // Marble button prefab — circular colored button (no text)
+        var marbleBtnPrefab = CreateButton(canvasObj.transform, "MarbleButtonPrefab", "", Vector2.zero,
+            new Vector2(70, 70), new Color(0.3f, 0.3f, 0.4f));
         var mbPrefab = PrefabUtility.SaveAsPrefabAsset(marbleBtnPrefab, "Assets/Prefabs/MarbleButton.prefab");
         Object.DestroyImmediate(marbleBtnPrefab);
 

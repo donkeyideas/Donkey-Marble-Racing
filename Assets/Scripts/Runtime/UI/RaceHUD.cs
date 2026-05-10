@@ -78,8 +78,16 @@ namespace MarbleRace.Runtime.UI
             for (int i = 0; i < Mathf.Min(sorted.Count, 5); i++)
             {
                 var identity = sorted[i].GetComponent<MarbleIdentity>();
-                string name = identity != null ? identity.MarbleName : $"Marble {i + 1}";
-                sb.AppendLine($"{i + 1}. {name}");
+                // Show position number with color hex marker instead of name
+                if (identity != null)
+                {
+                    string hex = ColorUtility.ToHtmlStringRGB(identity.MarbleColor);
+                    sb.AppendLine($"{i + 1}. <color=#{hex}>\u25cf</color>");
+                }
+                else
+                {
+                    sb.AppendLine($"{i + 1}. \u25cf");
+                }
             }
 
             positionsText.text = sb.ToString();

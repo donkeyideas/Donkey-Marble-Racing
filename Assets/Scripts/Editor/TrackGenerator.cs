@@ -8,22 +8,51 @@ using UnityEditor;
 public static class TrackGenerator
 {
     private static PhysicsMaterial _trackPhysMat;
+    private static TrackType _currentType;
 
     public static GameObject GenerateTrack(TrackType type, PhysicsMaterial trackPhysMat)
     {
         _trackPhysMat = trackPhysMat;
+        _currentType = type;
         return BuildCurvedTrack();
     }
 
-    // Sample a smooth parametric curve at many points so marbles never hit sharp angles
+    // Sample a smooth parametric curve — shape varies by track type
     static Vector3 CurvePoint(float t)
     {
-        // t goes from 0 to 1 along the entire track length
         float trackLength = 80f;
         float z = t * trackLength;
-        float y = Mathf.Lerp(3.0f, -4.5f, t); // gentle downhill slope
-        // Sine wave for S-curves: 1.5 cycles = 3 curves, amplitude 2
-        float x = Mathf.Sin(t * Mathf.PI * 3f) * 2f;
+        float x, y;
+
+        switch (_currentType)
+        {
+            case TrackType.Zigzag:
+                // Sharp zigzag using triangle wave, steeper drop
+                y = Mathf.Lerp(4.0f, -5.0f, t);
+                float tri = Mathf.PingPong(t * 4f, 1f) * 2f - 1f;
+                x = tri * 2.5f;
+                break;
+
+            case TrackType.Spiral:
+                // Gentle spiral that winds outward then back
+                y = Mathf.Lerp(3.0f, -5.0f, t);
+                float radius = 1.5f + Mathf.Sin(t * Mathf.PI) * 1.5f;
+                x = Mathf.Sin(t * Mathf.PI * 4f) * radius;
+                break;
+
+            case TrackType.Funnel:
+                // Wide at start, narrows, then opens to bucket
+                y = Mathf.Lerp(3.0f, -4.5f, t);
+                float amp = 2.5f * (1f - Mathf.Abs(t - 0.5f) * 2f);
+                x = Mathf.Sin(t * Mathf.PI * 3f) * Mathf.Max(amp, 0.5f);
+                break;
+
+            default: // Downhill + MultiPath use standard S-curve
+                y = Mathf.Lerp(3.0f, -4.5f, t);
+                x = Mathf.Sin(t * Mathf.PI * 3f) * 2f;
+                break;
+        }
+
         return new Vector3(x, y, z);
     }
 
@@ -76,14 +105,20 @@ public static class TrackGenerator
         var obstacleMat = MakeMat("ObstacleMat", new Color(0.9f, 0.15f, 0.1f), 0.7f, 0.3f);
         var spinnerMat = MakeMat("SpinnerMat", new Color(1f, 0.6f, 0f), 0.8f, 0.5f);
 
-        // Obstacle 1: Large block bumper at 1/3, offset right
-        Vector3 obs1Pos = CurvePoint(0.33f) + new Vector3(0.8f, 1f, 0f);
-        var block = MakeCube(track, "Bumper_1", obs1Pos, new Vector3(1.5f, 2f, 1.5f), obstacleMat);
-        var bumperHazard = block.AddComponent<TrackHazard>();
+        // Obstacle 1: Round bumper post at 1/3, offset right
+        Vector3 obs1Pos = CurvePoint(0.33f) + new Vector3(0.8f, 0.6f, 0f);
+        var bumper1 = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        bumper1.name = "Bumper_1";
+        bumper1.transform.parent = track.transform;
+        bumper1.transform.position = obs1Pos;
+        bumper1.transform.localScale = new Vector3(1.2f, 1.2f, 1.2f);
+        bumper1.GetComponent<Renderer>().material = obstacleMat;
+        if (_trackPhysMat != null) bumper1.GetComponent<Collider>().material = _trackPhysMat;
+        var bumperHazard = bumper1.AddComponent<TrackHazard>();
         SetHazardProperties(bumperHazard, HazardType.Bumper, 3f, 0f);
 
-        // Obstacle 2: Spinning bar at 2/3 that sweeps across the track
-        Vector3 obs2Pos = CurvePoint(0.66f) + new Vector3(0f, 1f, 0f);
+        // Obstacle 2: Spinning bar at 2/3 — marble height, trigger collider so it knocks not blocks
+        Vector3 obs2Pos = CurvePoint(0.66f) + new Vector3(0f, 0.5f, 0f);
         var spinnerPivot = new GameObject("Spinner_1");
         spinnerPivot.transform.parent = track.transform;
         spinnerPivot.transform.position = obs2Pos;
@@ -92,11 +127,44 @@ public static class TrackGenerator
         arm.name = "SpinnerArm";
         arm.transform.parent = spinnerPivot.transform;
         arm.transform.localPosition = Vector3.zero;
-        arm.transform.localScale = new Vector3(0.4f, 0.15f, 3.5f); // flat wide bar
+        arm.transform.localScale = new Vector3(0.5f, 0.15f, 5.5f);
         arm.transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
         arm.GetComponent<Renderer>().material = spinnerMat;
+        // Make trigger so marbles pass through but get force applied
+        arm.GetComponent<Collider>().isTrigger = true;
         var spinnerHazard = spinnerPivot.AddComponent<TrackHazard>();
         SetHazardProperties(spinnerHazard, HazardType.Spinner, 4f, 120f);
+
+        // Obstacle 3: Two round bumper posts staggered apart so marbles deflect, not stuck
+        Vector3 obs3a = CurvePoint(0.45f) + new Vector3(-1.2f, 0.6f, 0f);
+        var postA = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        postA.name = "Post_A";
+        postA.transform.parent = track.transform;
+        postA.transform.position = obs3a;
+        postA.transform.localScale = new Vector3(1f, 1.2f, 1f);
+        postA.GetComponent<Renderer>().material = obstacleMat;
+        if (_trackPhysMat != null) postA.GetComponent<Collider>().material = _trackPhysMat;
+        postA.AddComponent<TrackHazard>();
+        SetHazardProperties(postA.GetComponent<TrackHazard>(), HazardType.Bumper, 2.5f, 0f);
+
+        Vector3 obs3b = CurvePoint(0.55f) + new Vector3(1.2f, 0.6f, 0f);
+        var postB = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        postB.name = "Post_B";
+        postB.transform.parent = track.transform;
+        postB.transform.position = obs3b;
+        postB.transform.localScale = new Vector3(1f, 1.2f, 1f);
+        postB.GetComponent<Renderer>().material = obstacleMat;
+        if (_trackPhysMat != null) postB.GetComponent<Collider>().material = _trackPhysMat;
+        postB.AddComponent<TrackHazard>();
+        SetHazardProperties(postB.GetComponent<TrackHazard>(), HazardType.Bumper, 2.5f, 0f);
+
+        // Obstacle 4: Boost pad at 80% — green pad that launches marbles forward
+        var boostMat = MakeMat("BoostMat", new Color(0.1f, 0.9f, 0.3f), 0.2f, 0.9f);
+        Vector3 boostPos = CurvePoint(0.8f) + new Vector3(0f, 0.3f, 0f);
+        var boostPad = MakeCube(track, "BoostPad", boostPos, new Vector3(4f, 0.2f, 2f), boostMat);
+        boostPad.GetComponent<BoxCollider>().isTrigger = true;
+        var boostHazard = boostPad.AddComponent<TrackHazard>();
+        SetHazardProperties(boostHazard, HazardType.BoostPad, 6f, 0f);
 
         // BUCKET at the end to catch marbles
         Vector3 lastPoint = points[segmentCount];

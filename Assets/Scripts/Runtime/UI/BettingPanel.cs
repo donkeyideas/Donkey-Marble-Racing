@@ -82,7 +82,8 @@ namespace MarbleRace.Runtime.UI
                 var text = buttonObj.GetComponentInChildren<TMP_Text>();
                 var image = buttonObj.GetComponent<Image>();
 
-                if (text != null) text.text = identity.MarbleName;
+                // Show marble color circle, no text name
+                if (text != null) text.text = "";
                 if (image != null) image.color = identity.MarbleColor;
 
                 string marbleId = identity.MarbleId;

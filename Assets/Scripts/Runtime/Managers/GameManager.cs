@@ -42,6 +42,10 @@ namespace MarbleRace.Runtime.Managers
 
         private void Start()
         {
+            // Claim daily reward on startup
+            if (economyManager != null)
+                economyManager.ClaimDailyReward();
+
             TransitionTo(GameState.MainMenu);
         }
 

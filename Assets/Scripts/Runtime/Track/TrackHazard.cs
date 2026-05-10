@@ -46,6 +46,11 @@ namespace MarbleRace.Runtime.Track
                     rb.AddForce(awayDir * forceStrength, ForceMode.Impulse);
                     break;
 
+                case HazardType.Spinner:
+                    Vector3 hitDir = (other.transform.position - transform.position).normalized;
+                    rb.AddForce(hitDir * forceStrength, ForceMode.Impulse);
+                    break;
+
                 case HazardType.JumpRamp:
                     rb.AddForce(Vector3.up * forceStrength + transform.forward * (forceStrength * 0.5f), ForceMode.Impulse);
                     break;

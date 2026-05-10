@@ -39,11 +39,24 @@ namespace MarbleRace.Runtime.Marble
                 }
                 else
                 {
-                    // Set color while keeping metallic properties
                     _renderer.material.color = marbleData.marbleColor;
                 }
             }
 
+            // Add colored trail
+            var trail = GetComponent<TrailRenderer>();
+            if (trail == null) trail = gameObject.AddComponent<TrailRenderer>();
+            trail.time = 1.5f;
+            trail.startWidth = 0.2f;
+            trail.endWidth = 0.02f;
+            trail.minVertexDistance = 0.1f;
+            Color trailColor = marbleData.marbleColor;
+            Color fadeColor = trailColor;
+            fadeColor.a = 0f;
+            trail.startColor = trailColor;
+            trail.endColor = fadeColor;
+            trail.material = new Material(Shader.Find("Sprites/Default"));
+            trail.material.color = trailColor;
         }
     }
 }
