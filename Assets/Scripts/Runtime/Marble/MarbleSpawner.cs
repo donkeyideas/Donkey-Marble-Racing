@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using MarbleRace.Data;
+using MarbleRace.Runtime.Track;
 
 namespace MarbleRace.Runtime.Marble
 {
@@ -20,25 +21,23 @@ namespace MarbleRace.Runtime.Marble
         {
             DespawnAll();
 
-            int spawnCount = Mathf.Min(count, marbleConfigs.Length, spawnPoints.Length);
+            int spawnCount = Mathf.Min(count, marbleConfigs.Length);
 
-            // Shuffle spawn point indices so marbles start in random positions each race
-            int[] spawnOrder = new int[spawnCount];
-            for (int i = 0; i < spawnCount; i++) spawnOrder[i] = i;
-            for (int i = spawnCount - 1; i > 0; i--)
+            // Generate spawn positions on the track start area
+            var positions = GenerateSpawnPositions(spawnCount);
+
+            // Shuffle so marbles start in random lane positions each race
+            for (int i = positions.Length - 1; i > 0; i--)
             {
                 int j = Random.Range(0, i + 1);
-                int temp = spawnOrder[i];
-                spawnOrder[i] = spawnOrder[j];
-                spawnOrder[j] = temp;
+                var temp = positions[i];
+                positions[i] = positions[j];
+                positions[j] = temp;
             }
 
             for (int i = 0; i < spawnCount; i++)
             {
-                Vector3 position = spawnPoints[spawnOrder[i]].position;
-                Quaternion rotation = spawnPoints[spawnOrder[i]].rotation;
-
-                GameObject marbleObj = Instantiate(marblePrefab, position, rotation);
+                GameObject marbleObj = Instantiate(marblePrefab, positions[i], Quaternion.identity);
                 marbleObj.name = $"Marble_{marbleConfigs[i].marbleName}";
                 marbleObj.tag = "Marble";
 
@@ -56,6 +55,31 @@ namespace MarbleRace.Runtime.Marble
             }
 
             return _spawnedMarbles;
+        }
+
+        private Vector3[] GenerateSpawnPositions(int count)
+        {
+            // Place marbles on the track surface near the start
+            // Track start is at CurvePoint(0), surface = y + 0.25 + marble radius (0.5)
+            Vector3 trackStart = RuntimeTrackBuilder.CurvePoint(0f);
+            float surfaceY = trackStart.y + 0.75f; // floor top + marble radius
+
+            float trackWidth = 5f;
+            float usableWidth = trackWidth - 1.5f; // leave margin from walls
+
+            var positions = new Vector3[count];
+            int cols = 4; // 4 marbles per row
+            for (int i = 0; i < count; i++)
+            {
+                int row = i / cols;
+                int col = i % cols;
+
+                float x = trackStart.x + Mathf.Lerp(-usableWidth / 2f, usableWidth / 2f, (col + 0.5f) / cols);
+                float z = trackStart.z + 1f + row * 1.2f; // stagger rows forward
+                positions[i] = new Vector3(x, surfaceY, z);
+            }
+
+            return positions;
         }
 
         public void DespawnAll()
