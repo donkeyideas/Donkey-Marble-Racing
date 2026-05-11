@@ -29,6 +29,7 @@ namespace MarbleRace.Runtime.UI
         [SerializeField] private TMP_Text timerText;
         [SerializeField] private TMP_Text balanceText;
         [SerializeField] private RaceHUD raceHUD;
+        [SerializeField] private LiveBetManager liveBetManager;
 
         private string _selectedMarbleId;
         private int _currentBetAmount;
@@ -158,6 +159,10 @@ namespace MarbleRace.Runtime.UI
                     }
                     raceHUD.SetPlayerBetColor(betMarbleColor, _currentBetAmount);
                 }
+
+                // Tell LiveBetManager about this bet so live betting can work
+                if (liveBetManager != null)
+                    liveBetManager.OpenWindow(_selectedMarbleId, _currentBetAmount);
 
                 // Trigger race start after bet
                 GameManager.Instance.OnBettingComplete();

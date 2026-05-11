@@ -10,6 +10,7 @@ namespace MarbleRace.Runtime.Managers
         [SerializeField] private GameObject raceHUD;
         [SerializeField] private GameObject resultsPanel;
         [SerializeField] private GameObject countdownOverlay;
+        [SerializeField] private GameObject liveBetPanel;
 
         [Header("References")]
         [SerializeField] private GameManager gameManager;
@@ -70,6 +71,7 @@ namespace MarbleRace.Runtime.Managers
         private void ShowRaceHUD()
         {
             SetActive(raceHUD, true);
+            SetActive(liveBetPanel, true);
         }
 
         private void ShowResults()
@@ -84,6 +86,7 @@ namespace MarbleRace.Runtime.Managers
             SetActive(raceHUD, false);
             SetActive(resultsPanel, false);
             SetActive(countdownOverlay, false);
+            SetActive(liveBetPanel, false);
         }
 
         private void SetActive(GameObject panel, bool active)

@@ -98,11 +98,11 @@ public class GameSetupWizard : EditorWindow
         settings.marbleMass = 1f;
         settings.marbleDrag = 0.1f;
         settings.marbleAngularDrag = 0.5f;
-        settings.minNudgeInterval = 0.8f;
-        settings.maxNudgeInterval = 2.0f;
-        settings.minNudgeForce = 0.1f;
-        settings.maxNudgeForce = 0.4f;
-        settings.lateralNudgeStrength = 0.1f;
+        settings.minNudgeInterval = 0.5f;
+        settings.maxNudgeInterval = 1.2f;
+        settings.minNudgeForce = 0.3f;
+        settings.maxNudgeForce = 0.9f;
+        settings.lateralNudgeStrength = 0.2f;
         settings.cameraFollowSpeed = 5f;
         settings.cameraLookAhead = 2f;
         AssetDatabase.CreateAsset(settings, "Assets/Data/RaceSettings.asset");
@@ -479,6 +479,20 @@ public class GameSetupWizard : EditorWindow
         var statsObj = new GameObject("RaceStatsManager");
         statsObj.AddComponent<RaceStatsManager>();
 
+        // --- LiveBetManager ---
+        var lbmObj = new GameObject("LiveBetManager");
+        var liveBetMgr = lbmObj.AddComponent<LiveBetManager>();
+        var lbmSO = new SerializedObject(liveBetMgr);
+        lbmSO.FindProperty("raceManager").objectReferenceValue = refs.raceManager;
+        lbmSO.FindProperty("bettingManager").objectReferenceValue = refs.bettingManager;
+        lbmSO.FindProperty("economyManager").objectReferenceValue = refs.economyManager;
+        lbmSO.ApplyModifiedProperties();
+
+        // Wire LiveBetManager to RaceManager
+        var rmSOLive = new SerializedObject(refs.raceManager);
+        rmSOLive.FindProperty("liveBetManager").objectReferenceValue = liveBetMgr;
+        rmSOLive.ApplyModifiedProperties();
+
         // Wire FinishLine
         var finishLine = Object.FindAnyObjectByType<FinishLine>();
         if (finishLine != null)
@@ -822,14 +836,102 @@ public class GameSetupWizard : EditorWindow
         rmSO2.FindProperty("raceHUD").objectReferenceValue = hudScript;
         rmSO2.ApplyModifiedProperties();
 
-        // Wire RaceHUD to BettingPanel for bet indicator
+        // Wire RaceHUD to BettingPanel for bet indicator + LiveBetManager
         var bettingScript2 = Object.FindAnyObjectByType<BettingPanel>(FindObjectsInactive.Include);
         if (bettingScript2 != null)
         {
             var bpSO2 = new SerializedObject(bettingScript2);
             bpSO2.FindProperty("raceHUD").objectReferenceValue = hudScript;
+            var liveBetMgrRef = Object.FindAnyObjectByType<LiveBetManager>();
+            if (liveBetMgrRef != null)
+                bpSO2.FindProperty("liveBetManager").objectReferenceValue = liveBetMgrRef;
             bpSO2.ApplyModifiedProperties();
         }
+
+        // --- Live Bet Panel (shown during race) ---
+        var liveBetPanelObj = CreatePanel(canvasObj.transform, "LiveBetPanel", new Color(0, 0, 0, 0));
+        liveBetPanelObj.SetActive(false);
+
+        // Main floating button
+        var openLiveBetBtn = CreateButton(liveBetPanelObj.transform, "OpenLiveBet", "DOUBLE DOWN", new Vector2(350, -300),
+            new Vector2(200, 50), new Color(0.9f, 0.5f, 0.1f));
+        openLiveBetBtn.AddComponent<ButtonFeedback>();
+        var progressText = CreateText(liveBetPanelObj.transform, "ProgressTimer", "100%", 14, new Vector2(350, -335), Color.yellow);
+
+        // Double down detail view
+        var ddView = new GameObject("DoubleDownView");
+        var ddRT = ddView.AddComponent<RectTransform>();
+        ddRT.SetParent(liveBetPanelObj.transform, false);
+        ddRT.anchoredPosition = new Vector2(0, -100);
+        ddRT.sizeDelta = new Vector2(450, 250);
+        var ddBg = ddView.AddComponent<Image>();
+        ddBg.color = new Color(0.1f, 0.1f, 0.15f, 0.95f);
+        ddView.SetActive(false);
+
+        var ddCostText = CreateText(ddView.transform, "DDCost", "Cost: --", 20, new Vector2(0, 60), Color.white);
+        var ddWinText = CreateText(ddView.transform, "DDWin", "Potential win: --", 20, new Vector2(0, 30), Color.green);
+        var ddFeeText = CreateText(ddView.transform, "DDFee", "Fee: 20%", 18, new Vector2(0, 0), Color.yellow);
+        var ddConfirmBtn = CreateButton(ddView.transform, "DDConfirm", "CONFIRM", new Vector2(-80, -50), new Vector2(150, 45),
+            new Color(0.1f, 0.7f, 0.2f));
+        var ddCancelBtn = CreateButton(ddView.transform, "DDCancel", "CANCEL", new Vector2(80, -50), new Vector2(150, 45),
+            new Color(0.5f, 0.2f, 0.2f));
+        var ddSwitchBtn = CreateButton(ddView.transform, "ShowSwitch", "SWITCH MARBLE", new Vector2(0, -100), new Vector2(200, 40),
+            new Color(0.4f, 0.3f, 0.7f));
+
+        // Switch view
+        var switchView = new GameObject("SwitchView");
+        var svRT = switchView.AddComponent<RectTransform>();
+        svRT.SetParent(liveBetPanelObj.transform, false);
+        svRT.anchoredPosition = new Vector2(0, -100);
+        svRT.sizeDelta = new Vector2(450, 250);
+        var svBg = switchView.AddComponent<Image>();
+        svBg.color = new Color(0.1f, 0.1f, 0.15f, 0.95f);
+        switchView.SetActive(false);
+
+        var switchInfoText = CreateText(switchView.transform, "SwitchInfo", "Forfeit 50% of bet", 18, new Vector2(0, 80), Color.yellow);
+        var switchContainer = new GameObject("SwitchMarbles");
+        var scRT = switchContainer.AddComponent<RectTransform>();
+        scRT.SetParent(switchView.transform, false);
+        scRT.anchoredPosition = new Vector2(0, 0);
+        scRT.sizeDelta = new Vector2(400, 100);
+        var scLayout = switchContainer.AddComponent<GridLayoutGroup>();
+        scLayout.cellSize = new Vector2(60, 60);
+        scLayout.spacing = new Vector2(10, 10);
+        scLayout.childAlignment = TextAnchor.MiddleCenter;
+        scLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        scLayout.constraintCount = 7;
+
+        var backBtn = CreateButton(switchView.transform, "BackToMain", "BACK", new Vector2(0, -100), new Vector2(150, 40),
+            new Color(0.4f, 0.4f, 0.5f));
+
+        // Wire LiveBetPanel
+        var liveBetPanelScript = liveBetPanelObj.AddComponent<LiveBetPanel>();
+        var lbpSO = new SerializedObject(liveBetPanelScript);
+        var liveBetMgrForPanel = Object.FindAnyObjectByType<LiveBetManager>();
+        lbpSO.FindProperty("liveBetManager").objectReferenceValue = liveBetMgrForPanel;
+        lbpSO.FindProperty("economyManager").objectReferenceValue = managers.economyManager;
+        lbpSO.FindProperty("raceManager").objectReferenceValue = managers.raceManager;
+        lbpSO.FindProperty("panelRoot").objectReferenceValue = liveBetPanelObj;
+        lbpSO.FindProperty("openLiveBetButton").objectReferenceValue = openLiveBetBtn.GetComponent<Button>();
+        lbpSO.FindProperty("progressTimerText").objectReferenceValue = progressText.GetComponent<TMP_Text>();
+        lbpSO.FindProperty("doubleDownView").objectReferenceValue = ddView;
+        lbpSO.FindProperty("doubleDownCostText").objectReferenceValue = ddCostText.GetComponent<TMP_Text>();
+        lbpSO.FindProperty("doubleDownWinText").objectReferenceValue = ddWinText.GetComponent<TMP_Text>();
+        lbpSO.FindProperty("feePercentText").objectReferenceValue = ddFeeText.GetComponent<TMP_Text>();
+        lbpSO.FindProperty("doubleDownButton").objectReferenceValue = ddConfirmBtn.GetComponent<Button>();
+        lbpSO.FindProperty("cancelButton").objectReferenceValue = ddCancelBtn.GetComponent<Button>();
+        lbpSO.FindProperty("showSwitchButton").objectReferenceValue = ddSwitchBtn.GetComponent<Button>();
+        lbpSO.FindProperty("switchView").objectReferenceValue = switchView;
+        lbpSO.FindProperty("switchMarbleContainer").objectReferenceValue = scRT;
+        lbpSO.FindProperty("switchMarbleButtonPrefab").objectReferenceValue = mbPrefab;
+        lbpSO.FindProperty("switchInfoText").objectReferenceValue = switchInfoText.GetComponent<TMP_Text>();
+        lbpSO.FindProperty("backToMainButton").objectReferenceValue = backBtn.GetComponent<Button>();
+        lbpSO.ApplyModifiedProperties();
+
+        // Wire LiveBetPanel to UIManager
+        var uiMgrSO2 = new SerializedObject(refs_uiManager);
+        uiMgrSO2.FindProperty("liveBetPanel").objectReferenceValue = liveBetPanelObj;
+        uiMgrSO2.ApplyModifiedProperties();
 
         return canvasObj;
     }

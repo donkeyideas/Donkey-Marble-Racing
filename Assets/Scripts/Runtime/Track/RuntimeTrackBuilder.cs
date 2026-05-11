@@ -53,6 +53,18 @@ namespace MarbleRace.Runtime.Track
                 points[i] = CurvePoint(t);
             }
 
+            // Neon accent color per track type for light strips
+            Color neonColor;
+            switch (type)
+            {
+                case TrackType.Zigzag: neonColor = new Color(1f, 0.3f, 0.2f); break;
+                case TrackType.Spiral: neonColor = new Color(0.2f, 0.6f, 1f); break;
+                case TrackType.Funnel: neonColor = new Color(0.7f, 0.3f, 1f); break;
+                case TrackType.MultiPath: neonColor = new Color(0.2f, 1f, 0.4f); break;
+                default: neonColor = new Color(0.3f, 0.7f, 1f); break;
+            }
+            var neonMat = MakeEmissiveMat("NeonMat", neonColor, neonColor, 3f, 0f, 0.95f);
+
             for (int i = 0; i < segmentCount; i++)
             {
                 Vector3 start = points[i];
@@ -74,6 +86,22 @@ namespace MarbleRace.Runtime.Track
                 Vector3 rightOffset = rotation * new Vector3((trackWidth / 2f + 0.25f), wallHeight / 2f, 0f);
                 var wallR = MakeCube(track, $"WallR_{i}", center + rightOffset, new Vector3(0.5f, wallHeight, length), wallMat, trackPhysMat);
                 wallR.transform.rotation = rotation;
+
+                // Neon light strips along wall base every 5 segments
+                if (i % 5 == 0)
+                {
+                    Vector3 neonLeftPos = rotation * new Vector3(-(trackWidth / 2f), 0.05f, 0f) + center;
+                    var neonL = MakeCube(track, $"NeonL_{i}", neonLeftPos, new Vector3(0.15f, 0.15f, length), neonMat, null);
+                    neonL.transform.rotation = rotation;
+
+                    Vector3 neonRightPos = rotation * new Vector3((trackWidth / 2f), 0.05f, 0f) + center;
+                    var neonR = MakeCube(track, $"NeonR_{i}", neonRightPos, new Vector3(0.15f, 0.15f, length), neonMat, null);
+                    neonR.transform.rotation = rotation;
+
+                    // Disable colliders on neon strips (decoration only)
+                    Object.Destroy(neonL.GetComponent<BoxCollider>());
+                    Object.Destroy(neonR.GetComponent<BoxCollider>());
+                }
             }
 
             // Obstacles

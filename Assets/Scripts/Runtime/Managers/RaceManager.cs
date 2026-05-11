@@ -25,6 +25,7 @@ namespace MarbleRace.Runtime.Managers
         [SerializeField] private RaceHUD raceHUD;
         [SerializeField] private RaceCamera raceCamera;
         [SerializeField] private WinCelebration winCelebration;
+        [SerializeField] private LiveBetManager liveBetManager;
 
         [Header("Events")]
         [SerializeField] private GameEvent onRacePrepared;
@@ -64,6 +65,10 @@ namespace MarbleRace.Runtime.Managers
             _isRacing = false;
             _firstFinishTriggered = false;
             _raceEndTriggered = false;
+
+            // Reset live betting for new race
+            if (liveBetManager != null)
+                liveBetManager.ResetForNewRace();
 
             // Rebuild track with a random type
             RebuildTrack();
@@ -138,6 +143,10 @@ namespace MarbleRace.Runtime.Managers
         public void EndRace()
         {
             _isRacing = false;
+
+            // Close live bet window
+            if (liveBetManager != null)
+                liveBetManager.CloseWindow();
 
             // Restore normal time (celebration sets slow-mo)
             Time.timeScale = 1f;
