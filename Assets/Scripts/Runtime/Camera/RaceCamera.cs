@@ -72,13 +72,16 @@ namespace MarbleRace.Runtime.Camera
 
         private void UpdateFinishCamera()
         {
-            // Top-down view looking straight down at the bucket
+            // Position camera past the finish, turned around to watch marbles arrive
             Vector3 targetPos = _finishFocusTarget.position;
-            Vector3 desiredPos = targetPos + new Vector3(0f, 15f, 0f);
-            transform.position = Vector3.Lerp(transform.position, desiredPos, Time.unscaledDeltaTime * 2f);
+            // Sit slightly beyond the winner (higher z), low angle looking back up the track
+            Vector3 desiredPos = targetPos + new Vector3(0f, 2.5f, 8f);
+            transform.position = Vector3.Lerp(transform.position, desiredPos, Time.deltaTime * 3f);
 
-            Quaternion lookRot = Quaternion.LookRotation(Vector3.down, Vector3.forward);
-            transform.rotation = Quaternion.Slerp(transform.rotation, lookRot, Time.unscaledDeltaTime * 3f);
+            // Look back toward the track (negative z) to see remaining marbles coming
+            Vector3 lookTarget = targetPos + new Vector3(0f, 1f, -15f);
+            Quaternion desiredRot = Quaternion.LookRotation(lookTarget - transform.position);
+            transform.rotation = Quaternion.Slerp(transform.rotation, desiredRot, Time.deltaTime * 4f);
         }
 
         public void Shake(float intensity, float duration)
