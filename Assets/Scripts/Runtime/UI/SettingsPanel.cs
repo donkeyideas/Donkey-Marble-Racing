@@ -123,6 +123,10 @@ namespace MarbleRace.Runtime.UI
         {
             if (Managers.RaceStatsManager.Instance != null)
                 Managers.RaceStatsManager.Instance.ResetStats();
+
+            // Also reset coins to starting amount
+            PlayerPrefs.SetInt("CoinBalance", 1000);
+            PlayerPrefs.Save();
         }
 
         private void LoadSettings()
