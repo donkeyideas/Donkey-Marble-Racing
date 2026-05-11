@@ -142,11 +142,15 @@ namespace MarbleRace.Runtime.Managers
 
             _raceTimer += Time.deltaTime;
 
-            // Position-based finish detection — any marble past z=78 is in the bucket zone
+            // Position-based finish detection — marble must be inside the bucket area
+            // Bucket: center at lastPoint + (0, -3, 5), size 12x10, floor at y ~ -7.5 for default track
             foreach (var marble in _activeMarbles)
             {
                 if (marble == null || marble.HasFinished) continue;
-                if (marble.transform.position.z >= 78f)
+                Vector3 pos = marble.transform.position;
+                // Must be past z=80 (track end) AND have fallen below track level (y < -5)
+                // This prevents marking airborne marbles that just flew past the z threshold
+                if (pos.z >= 80f && pos.y < -5f)
                 {
                     marble.MarkFinished();
                     _finishOrder.Add(marble.MarbleId);
