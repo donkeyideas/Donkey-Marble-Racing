@@ -60,8 +60,16 @@ namespace MarbleRace.Runtime.Marble
         private Vector3[] GenerateSpawnPositions(int count)
         {
             // Place marbles on the track surface near the start
-            // Track start is at CurvePoint(0), surface = y + 0.25 + marble radius (0.5)
+            // Use two points along the track to determine direction
             Vector3 trackStart = RuntimeTrackBuilder.CurvePoint(0f);
+            Vector3 trackAhead = RuntimeTrackBuilder.CurvePoint(0.02f);
+            Vector3 forward = (trackAhead - trackStart).normalized;
+            Vector3 right = Vector3.Cross(Vector3.up, forward).normalized;
+
+            // If right is zero (track goes straight up), fallback
+            if (right.sqrMagnitude < 0.01f)
+                right = Vector3.right;
+
             float surfaceY = trackStart.y + 0.75f; // floor top + marble radius
 
             float trackWidth = 5f;
@@ -74,9 +82,14 @@ namespace MarbleRace.Runtime.Marble
                 int row = i / cols;
                 int col = i % cols;
 
-                float x = trackStart.x + Mathf.Lerp(-usableWidth / 2f, usableWidth / 2f, (col + 0.5f) / cols);
-                float z = trackStart.z + 1f + row * 1.2f; // stagger rows forward
-                positions[i] = new Vector3(x, surfaceY, z);
+                // Spread across track width using the local right direction
+                float lateralOffset = Mathf.Lerp(-usableWidth / 2f, usableWidth / 2f, (col + 0.5f) / cols);
+                // Stagger rows along the track forward direction
+                float forwardOffset = 1f + row * 1.2f;
+
+                Vector3 pos = trackStart + right * lateralOffset + forward * forwardOffset;
+                pos.y = surfaceY; // Keep consistent height on track surface
+                positions[i] = pos;
             }
 
             return positions;

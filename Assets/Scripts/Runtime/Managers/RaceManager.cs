@@ -37,11 +37,15 @@ namespace MarbleRace.Runtime.Managers
         private List<MarbleController> _activeMarbles = new List<MarbleController>();
         private List<string> _finishOrder = new List<string>();
         private float _raceTimer;
+        private float _firstFinishTime;
         private bool _isRacing;
         private bool _firstFinishTriggered;
+        private bool _raceEndTriggered;
         private Coroutine _countdownCoroutine;
         private GameObject _currentTrackObject;
         private TrackType _currentTrackType;
+
+        private const float FINISH_GRACE_PERIOD = 8f; // End race 8s after first marble finishes
 
         public RaceResult LastResult { get; private set; }
         public List<MarbleController> ActiveMarbles => _activeMarbles;
@@ -56,8 +60,10 @@ namespace MarbleRace.Runtime.Managers
             marbleSpawner.DespawnAll();
             _finishOrder.Clear();
             _raceTimer = 0f;
+            _firstFinishTime = 0f;
             _isRacing = false;
             _firstFinishTriggered = false;
+            _raceEndTriggered = false;
 
             // Rebuild track with a random type
             RebuildTrack();
@@ -189,6 +195,7 @@ namespace MarbleRace.Runtime.Managers
                     if (!_firstFinishTriggered)
                     {
                         _firstFinishTriggered = true;
+                        _firstFinishTime = _raceTimer;
                         if (raceCamera != null)
                             raceCamera.FocusOnMarble(marble.transform);
                         if (winCelebration != null)
@@ -198,16 +205,29 @@ namespace MarbleRace.Runtime.Managers
 
                     if (_finishOrder.Count >= _activeMarbles.Count)
                     {
-                        GameManager.Instance.OnRaceFinished();
+                        TriggerRaceEnd();
                         return;
                     }
                 }
             }
 
+            // End race on timeout OR grace period after first finish
             if (_raceTimer >= raceSettings.raceTimeout)
             {
-                GameManager.Instance.OnRaceFinished();
+                TriggerRaceEnd();
             }
+            else if (_firstFinishTriggered && (_raceTimer - _firstFinishTime) >= FINISH_GRACE_PERIOD)
+            {
+                TriggerRaceEnd();
+            }
+        }
+
+        private void TriggerRaceEnd()
+        {
+            if (_raceEndTriggered) return;
+            _raceEndTriggered = true;
+            _isRacing = false;
+            GameManager.Instance.OnRaceFinished();
         }
 
         private string GetLeadingMarbleId()

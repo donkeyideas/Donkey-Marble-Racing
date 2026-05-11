@@ -16,7 +16,8 @@ namespace MarbleRace.Runtime.Track
             var floorMat = MakeMat("FloorMat", new Color(0.15f, 0.18f, 0.3f), 0.4f, 0.7f);
             var wallMat = MakeMat("WallMat", new Color(0.08f, 0.08f, 0.12f), 0.6f, 0.85f);
 
-            int segmentCount = 40;
+            // More segments for tighter curves, prevents gaps between blocks
+            int segmentCount = (type == TrackType.Zigzag || type == TrackType.Spiral) ? 100 : 80;
             float trackWidth = 5f;
             float wallHeight = 3.5f;
 
@@ -33,7 +34,8 @@ namespace MarbleRace.Runtime.Track
                 Vector3 end = points[i + 1];
                 Vector3 center = (start + end) / 2f;
                 Vector3 direction = (end - start).normalized;
-                float length = Vector3.Distance(start, end) + 0.15f;
+                // Generous overlap to eliminate gaps on curved sections
+                float length = Vector3.Distance(start, end) + 0.5f;
 
                 Quaternion rotation = Quaternion.LookRotation(direction, Vector3.up);
 
@@ -129,25 +131,25 @@ namespace MarbleRace.Runtime.Track
             {
                 case TrackType.Zigzag:
                     y = Mathf.Lerp(4.0f, -5.0f, t);
-                    float tri = Mathf.PingPong(t * 4f, 1f) * 2f - 1f;
-                    x = tri * 2.5f;
+                    // Use sine wave instead of triangle wave for smoother curves
+                    x = Mathf.Sin(t * Mathf.PI * 5f) * 2f;
                     break;
 
                 case TrackType.Spiral:
                     y = Mathf.Lerp(3.0f, -5.0f, t);
-                    float radius = 1.5f + Mathf.Sin(t * Mathf.PI) * 1.5f;
+                    float radius = 1.2f + Mathf.Sin(t * Mathf.PI) * 1.2f;
                     x = Mathf.Sin(t * Mathf.PI * 4f) * radius;
                     break;
 
                 case TrackType.Funnel:
                     y = Mathf.Lerp(3.0f, -4.5f, t);
-                    float amp = 2.5f * (1f - Mathf.Abs(t - 0.5f) * 2f);
+                    float amp = 2f * (1f - Mathf.Abs(t - 0.5f) * 2f);
                     x = Mathf.Sin(t * Mathf.PI * 3f) * Mathf.Max(amp, 0.5f);
                     break;
 
                 default: // Downhill + MultiPath
                     y = Mathf.Lerp(3.0f, -4.5f, t);
-                    x = Mathf.Sin(t * Mathf.PI * 3f) * 2f;
+                    x = Mathf.Sin(t * Mathf.PI * 3f) * 1.8f;
                     break;
             }
 
@@ -156,7 +158,8 @@ namespace MarbleRace.Runtime.Track
 
         public static float GetStartSurfaceY()
         {
-            return 3.25f;
+            // Dynamic based on current track type
+            return CurvePoint(0f).y + 0.75f;
         }
 
         public static string GetTrackName(TrackType type)
