@@ -51,8 +51,8 @@ namespace MarbleRace.Runtime.Track
 
             // More segments for tighter curves, prevents gaps between blocks
             int segmentCount = (type == TrackType.Zigzag || type == TrackType.Spiral || type == TrackType.Serpentine) ? 100
-                : type == TrackType.Racetrack ? 140 : 80;
-            float trackWidth = 5f;
+                : type == TrackType.Racetrack ? 160 : 80;
+            float trackWidth = type == TrackType.Racetrack ? 8f : 5f;
             float wallHeight = 3.5f;
 
             Vector3[] points = new Vector3[segmentCount + 1];
@@ -219,29 +219,30 @@ namespace MarbleRace.Runtime.Track
                     break;
 
                 case TrackType.Racetrack:
-                    // True horse-racing oval: 1.5 laps around an ellipse, then exit ramp to z=82.
-                    // Oval centered at (0, y, 40), semi-major=30 (Z), semi-minor=14 (X).
-                    // Start at bottom of oval (z=10), after 1.5 laps end at top (z=70), exit straight.
-                    float ovalPhase = 0.9f; // 90% of track is the oval loop
+                    // True horse-racing oval: 1 full lap around a large ellipse, then exit ramp.
+                    // Oval centered at (0, y, 40), semi-major=35 (Z), semi-minor=20 (X).
+                    // Start at bottom (z=5), lap clockwise, exit straight to z=82.
+                    float ovalPhase = 0.92f; // 92% of track is the oval loop
                     if (t <= ovalPhase)
                     {
-                        float ovalT = t / ovalPhase; // 0→1 over the oval portion
-                        float totalAngle = ovalT * 1.5f * Mathf.PI * 2f; // 1.5 laps
-                        float startAngle = -Mathf.PI / 2f; // start at bottom of oval (z=10)
+                        float ovalT = t / ovalPhase;
+                        float totalAngle = ovalT * Mathf.PI * 2f; // 1 full lap
+                        float startAngle = -Mathf.PI / 2f; // start at bottom
                         float currentAngle = startAngle + totalAngle;
-                        float rX = 14f; // semi-minor axis (X width)
-                        float rZ = 30f; // semi-major axis (Z length)
+                        float rX = 20f; // wide oval
+                        float rZ = 35f; // long oval
                         x = rX * Mathf.Cos(currentAngle);
                         z = 40f + rZ * Mathf.Sin(currentAngle);
                     }
                     else
                     {
-                        // Exit ramp: straight from (0, y, 70) to (0, y, 82)
-                        float exitT = (t - ovalPhase) / (1f - ovalPhase); // 0→1 over exit
+                        // Exit ramp: straight from bottom of oval (0, y, 5) to z=82
+                        float exitT = (t - ovalPhase) / (1f - ovalPhase);
+                        // Smooth transition from oval end position to exit
                         x = Mathf.Lerp(0f, 0f, exitT);
-                        z = Mathf.Lerp(70f, 82f, exitT);
+                        z = Mathf.Lerp(5f, 82f, exitT);
                     }
-                    y = Mathf.Lerp(4.0f, -6.0f, t);
+                    y = Mathf.Lerp(3.0f, -5.0f, t);
                     break;
 
                 case TrackType.Zigzag:

@@ -10,7 +10,6 @@ namespace MarbleRace.Runtime.Camera
         private Vector3 _offset = new Vector3(0f, 6f, -10f);
         private Vector3 _defaultOffset = new Vector3(0f, 6f, -10f);
         private Vector3 _serpentineOffset = new Vector3(0f, 18f, -16f); // Higher for wide S-curves
-        private Vector3 _racetrackOffset = new Vector3(0f, 45f, -5f); // Bird's eye for oval loop
         private float _smoothTime = 0.4f;
         private float _rotationSmooth = 3f;
 
@@ -18,6 +17,7 @@ namespace MarbleRace.Runtime.Camera
         private Vector3 _currentVelocity;
         private Vector3 _smoothTarget;
         private bool _active;
+        private bool _isStaticCamera; // For racetrack: fixed overhead view
 
         // Shake
         private float _shakeIntensity;
@@ -35,6 +35,7 @@ namespace MarbleRace.Runtime.Camera
         public void SetTrackType(MarbleRace.Data.TrackType trackType)
         {
             var cam = GetComponent<UnityEngine.Camera>();
+            _isStaticCamera = false;
             switch (trackType)
             {
                 case MarbleRace.Data.TrackType.Serpentine:
@@ -42,8 +43,9 @@ namespace MarbleRace.Runtime.Camera
                     if (cam != null) cam.fieldOfView = 75f;
                     break;
                 case MarbleRace.Data.TrackType.Racetrack:
-                    _offset = _racetrackOffset;
-                    if (cam != null) cam.fieldOfView = 80f;
+                    // Fixed bird's-eye above oval center (0, y, 40)
+                    _isStaticCamera = true;
+                    if (cam != null) cam.fieldOfView = 70f;
                     break;
                 default:
                     _offset = _defaultOffset;
@@ -58,10 +60,19 @@ namespace MarbleRace.Runtime.Camera
             _active = true;
             _inFinishMode = false;
 
-            Vector3 center = GetGroupCenter();
-            _smoothTarget = center;
-            transform.position = center + _offset;
-            transform.LookAt(center);
+            if (_isStaticCamera)
+            {
+                // Fixed position above oval center looking straight down
+                transform.position = new Vector3(0f, 60f, 40f);
+                transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+            }
+            else
+            {
+                Vector3 center = GetGroupCenter();
+                _smoothTarget = center;
+                transform.position = center + _offset;
+                transform.LookAt(center);
+            }
         }
 
         private void LateUpdate()
@@ -73,6 +84,9 @@ namespace MarbleRace.Runtime.Camera
                 UpdateFinishCamera();
                 return;
             }
+
+            // Static camera: stays fixed overhead (racetrack)
+            if (_isStaticCamera) return;
 
             Vector3 target = GetGroupCenter();
             _smoothTarget = Vector3.SmoothDamp(_smoothTarget, target, ref _currentVelocity, _smoothTime);
