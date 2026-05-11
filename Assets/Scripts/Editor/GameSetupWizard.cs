@@ -552,29 +552,35 @@ public class GameSetupWizard : EditorWindow
         CreateText(mainMenu.transform, "Title", "DONKEY MARBLE RACING", 48, new Vector2(0, 300), Color.white);
         CreateText(mainMenu.transform, "Subtitle", "Place your bets!", 24, new Vector2(0, 220), Color.gray);
         var coinDisplay = CreateText(mainMenu.transform, "CoinBalance", "1000 coins", 32, new Vector2(0, 140), Color.yellow);
-        var playBtn = CreateButton(mainMenu.transform, "PlayButton", "RACE!", new Vector2(0, -50), new Vector2(400, 80),
+        var playBtn = CreateButton(mainMenu.transform, "PlayButton", "RACE!", new Vector2(0, -60), new Vector2(400, 80),
             new Color(0.1f, 0.7f, 0.2f));
-        var dailyBtn = CreateButton(mainMenu.transform, "DailyRewardButton", "Daily Reward", new Vector2(0, -160), new Vector2(300, 60),
+        var dailyBtn = CreateButton(mainMenu.transform, "DailyRewardButton", "Daily Reward", new Vector2(0, -170), new Vector2(300, 60),
             new Color(0.9f, 0.6f, 0.1f));
-        var statsBtn = CreateButton(mainMenu.transform, "StatsButton", "STATS", new Vector2(0, -260), new Vector2(300, 60),
+        var statsBtn = CreateButton(mainMenu.transform, "StatsButton", "STATS", new Vector2(0, -270), new Vector2(300, 60),
             new Color(0.3f, 0.5f, 0.9f));
-        var settingsBtn = CreateButton(mainMenu.transform, "SettingsButton", "SETTINGS", new Vector2(0, -350), new Vector2(300, 60),
+        var settingsBtn = CreateButton(mainMenu.transform, "SettingsButton", "SETTINGS", new Vector2(0, -360), new Vector2(300, 60),
             new Color(0.4f, 0.4f, 0.5f));
 
         // --- Track Selection (on main menu) ---
         var trackSelectContainer = new GameObject("TrackSelection");
         var tsRT = trackSelectContainer.AddComponent<RectTransform>();
         tsRT.SetParent(mainMenu.transform, false);
-        tsRT.anchoredPosition = new Vector2(0, 50);
-        tsRT.sizeDelta = new Vector2(500, 60);
+        tsRT.anchoredPosition = new Vector2(0, 40);
+        tsRT.sizeDelta = new Vector2(420, 70);
 
-        var tsLabel = CreateText(trackSelectContainer.transform, "TrackLabel", "TRACK:", 20, new Vector2(-200, 0), Color.gray);
-        var tsTrackName = CreateText(trackSelectContainer.transform, "TrackName", "RANDOM", 28, new Vector2(0, 0), Color.white);
+        // Add a visible background so it stands out
+        var tsBg = trackSelectContainer.AddComponent<Image>();
+        tsBg.color = new Color(0.12f, 0.12f, 0.2f, 1f);
 
-        var tsPrevBtn = CreateButton(trackSelectContainer.transform, "PrevTrack", "<", new Vector2(-160, 0), new Vector2(50, 50),
-            new Color(0.3f, 0.3f, 0.4f));
-        var tsNextBtn = CreateButton(trackSelectContainer.transform, "NextTrack", ">", new Vector2(160, 0), new Vector2(50, 50),
-            new Color(0.3f, 0.3f, 0.4f));
+        var tsLabel = CreateText(trackSelectContainer.transform, "TrackLabel", "TRACK", 18, new Vector2(-150, 0), new Color(0.6f, 0.6f, 0.7f));
+        tsLabel.GetComponent<RectTransform>().sizeDelta = new Vector2(120, 50);
+        var tsTrackName = CreateText(trackSelectContainer.transform, "TrackName", "RANDOM", 26, new Vector2(30, 0), Color.cyan);
+        tsTrackName.GetComponent<RectTransform>().sizeDelta = new Vector2(220, 50);
+
+        var tsPrevBtn = CreateButton(trackSelectContainer.transform, "PrevTrack", "<", new Vector2(-190, 0), new Vector2(45, 50),
+            new Color(0.25f, 0.4f, 0.6f));
+        var tsNextBtn = CreateButton(trackSelectContainer.transform, "NextTrack", ">", new Vector2(190, 0), new Vector2(45, 50),
+            new Color(0.25f, 0.4f, 0.6f));
         tsPrevBtn.AddComponent<ButtonFeedback>();
         tsNextBtn.AddComponent<ButtonFeedback>();
 
