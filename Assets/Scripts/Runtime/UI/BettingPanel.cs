@@ -73,12 +73,6 @@ namespace MarbleRace.Runtime.UI
 
             _marbles = raceManager.ActiveMarbles;
 
-            // Get odds for all marbles
-            var marbleIds = new List<string>();
-            foreach (var m in _marbles)
-                marbleIds.Add(m.MarbleId);
-            var odds = bettingManager.GetCurrentOdds(marbleIds);
-
             foreach (var marble in _marbles)
             {
                 var identity = marble.GetComponent<MarbleIdentity>();
@@ -89,16 +83,8 @@ namespace MarbleRace.Runtime.UI
                 var text = buttonObj.GetComponentInChildren<TMP_Text>();
                 var image = buttonObj.GetComponent<Image>();
 
-                // Show name, win rate, and odds
-                string label = identity.MarbleName;
-                var stat = RaceStatsManager.Instance?.GetMarbleStat(identity.MarbleId);
-                if (stat != null && stat.totalRaces > 0)
-                    label += $" ({stat.WinRate * 100f:F0}%)";
-
-                float marbleOdds = odds.ContainsKey(identity.MarbleId) ? odds[identity.MarbleId] : 8f;
-                label += $"\n{marbleOdds:F1}x";
-
-                if (text != null) text.text = label;
+                // Just show color, no text
+                if (text != null) text.text = "";
                 if (image != null) image.color = identity.MarbleColor;
 
                 string marbleId = identity.MarbleId;
@@ -156,20 +142,20 @@ namespace MarbleRace.Runtime.UI
                 if (skipBetButton != null)
                     skipBetButton.interactable = false;
 
-                // Tell HUD about the player's bet
+                // Tell HUD about the player's bet (color dot)
                 if (raceHUD != null)
                 {
-                    string betMarbleName = "";
+                    string betMarbleColor = "FFFFFF";
                     foreach (var m in _marbles)
                     {
                         var id = m.GetComponent<MarbleIdentity>();
                         if (id != null && id.MarbleId == _selectedMarbleId)
                         {
-                            betMarbleName = id.MarbleName;
+                            betMarbleColor = ColorUtility.ToHtmlStringRGB(id.MarbleColor);
                             break;
                         }
                     }
-                    raceHUD.SetPlayerBet(betMarbleName, _currentBetAmount);
+                    raceHUD.SetPlayerBetColor(betMarbleColor, _currentBetAmount);
                 }
 
                 // Trigger race start after bet
@@ -194,20 +180,24 @@ namespace MarbleRace.Runtime.UI
 
             if (selectedMarbleText != null)
             {
-                string displayName = "Select a marble";
-                if (!string.IsNullOrEmpty(_selectedMarbleId) && _marbles != null)
+                if (string.IsNullOrEmpty(_selectedMarbleId) || _marbles == null)
                 {
+                    selectedMarbleText.text = "Select a marble";
+                }
+                else
+                {
+                    // Show colored dot for the selected marble
                     foreach (var m in _marbles)
                     {
                         var id = m.GetComponent<MarbleIdentity>();
                         if (id != null && id.MarbleId == _selectedMarbleId)
                         {
-                            displayName = id.MarbleName;
+                            string hex = ColorUtility.ToHtmlStringRGB(id.MarbleColor);
+                            selectedMarbleText.text = $"<color=#{hex}>\u25CF</color> Selected";
                             break;
                         }
                     }
                 }
-                selectedMarbleText.text = displayName;
             }
 
             if (betAmountText != null)

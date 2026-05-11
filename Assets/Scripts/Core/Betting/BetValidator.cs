@@ -41,7 +41,7 @@ namespace MarbleRace.Core.Betting
             if (amount > _maxBet)
                 return BetValidationResult.AboveMaximum;
 
-            if (!wallet.CanAfford(amount))
+            if (wallet == null || !wallet.CanAfford(amount))
                 return BetValidationResult.InsufficientFunds;
 
             return BetValidationResult.Valid;

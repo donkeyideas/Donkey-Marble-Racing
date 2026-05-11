@@ -82,6 +82,12 @@ namespace MarbleRace.Runtime.UI
                 playerBetIndicator.text = $"Your bet: {amount} on {marbleName}";
         }
 
+        public void SetPlayerBetColor(string colorHex, int amount)
+        {
+            if (playerBetIndicator != null)
+                playerBetIndicator.text = $"Bet: {amount} on <color=#{colorHex}>\u25CF</color>";
+        }
+
         private void UpdateTimer()
         {
             if (timerText != null)
@@ -112,7 +118,7 @@ namespace MarbleRace.Runtime.UI
                     if (identity != null && identity.MarbleId == marbleId)
                     {
                         string hex = ColorUtility.ToHtmlStringRGB(identity.MarbleColor);
-                        sb.AppendLine($"{position}. <color=#{hex}>\u25cf {identity.MarbleName}</color>");
+                        sb.AppendLine($"{position}. <color=#{hex}>\u25cf</color>");
                         position++;
                         break;
                     }
@@ -136,7 +142,7 @@ namespace MarbleRace.Runtime.UI
                     if (identity != null)
                     {
                         string hex = ColorUtility.ToHtmlStringRGB(identity.MarbleColor);
-                        sb.AppendLine($"{position}. <color=#{hex}>\u25cf {identity.MarbleName}</color>");
+                        sb.AppendLine($"{position}. <color=#{hex}>\u25cf</color>");
                     }
                     position++;
                 }

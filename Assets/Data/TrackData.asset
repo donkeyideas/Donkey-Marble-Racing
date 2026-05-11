@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: TrackData
   m_EditorClassIdentifier: MarbleRace.Data::MarbleRace.Data.TrackData
   trackId: track_01
-  trackName: Spiral Track
-  trackType: 4
+  trackName: Zigzag Track
+  trackType: 1
   checkpointCount: 3
   expectedRaceTime: 30
   startPositions:
