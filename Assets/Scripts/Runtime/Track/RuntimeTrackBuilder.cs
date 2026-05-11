@@ -13,8 +13,33 @@ namespace MarbleRace.Runtime.Track
 
             var track = new GameObject("Track");
 
-            var floorMat = MakeMat("FloorMat", new Color(0.15f, 0.18f, 0.3f), 0.4f, 0.7f);
-            var wallMat = MakeMat("WallMat", new Color(0.08f, 0.08f, 0.12f), 0.6f, 0.85f);
+            // Unique color theme per track type
+            Color floorColor, wallColor;
+            switch (type)
+            {
+                case TrackType.Zigzag:
+                    floorColor = new Color(0.25f, 0.12f, 0.12f); // deep red
+                    wallColor = new Color(0.12f, 0.05f, 0.05f);
+                    break;
+                case TrackType.Spiral:
+                    floorColor = new Color(0.12f, 0.2f, 0.28f); // ocean blue
+                    wallColor = new Color(0.05f, 0.08f, 0.15f);
+                    break;
+                case TrackType.Funnel:
+                    floorColor = new Color(0.2f, 0.15f, 0.28f); // purple
+                    wallColor = new Color(0.08f, 0.05f, 0.14f);
+                    break;
+                case TrackType.MultiPath:
+                    floorColor = new Color(0.12f, 0.22f, 0.12f); // forest green
+                    wallColor = new Color(0.05f, 0.1f, 0.05f);
+                    break;
+                default: // Downhill
+                    floorColor = new Color(0.15f, 0.18f, 0.3f); // original blue-gray
+                    wallColor = new Color(0.08f, 0.08f, 0.12f);
+                    break;
+            }
+            var floorMat = MakeMat("FloorMat", floorColor, 0.4f, 0.7f);
+            var wallMat = MakeMat("WallMat", wallColor, 0.6f, 0.85f);
 
             // More segments for tighter curves, prevents gaps between blocks
             int segmentCount = (type == TrackType.Zigzag || type == TrackType.Spiral) ? 100 : 80;

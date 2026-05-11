@@ -138,6 +138,7 @@ namespace MarbleRace.Runtime.UI
             if (result == BetValidationResult.Valid)
             {
                 AudioManager.Instance?.PlayBetPlaced();
+                HapticManager.MediumImpact();
                 confirmBetButton.interactable = false;
                 if (skipBetButton != null)
                     skipBetButton.interactable = false;
@@ -220,7 +221,14 @@ namespace MarbleRace.Runtime.UI
             var odds = bettingManager.GetCurrentOdds(marbleIds);
 
             if (odds.ContainsKey(_selectedMarbleId))
-                oddsText.text = $"Odds: {odds[_selectedMarbleId]:F1}x";
+            {
+                float multiplier = odds[_selectedMarbleId];
+                int potentialWin = Mathf.RoundToInt(_currentBetAmount * multiplier);
+                if (_currentBetAmount > 0)
+                    oddsText.text = $"{multiplier:F1}x \u2022 Win: {potentialWin}";
+                else
+                    oddsText.text = $"{multiplier:F1}x";
+            }
         }
     }
 }

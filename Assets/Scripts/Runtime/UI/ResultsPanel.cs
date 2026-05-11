@@ -100,6 +100,7 @@ namespace MarbleRace.Runtime.UI
                     if (loseEffect != null) loseEffect.SetActive(false);
                     AudioManager.Instance?.PlayWinFanfare();
                     AudioManager.Instance?.PlayCoinReward();
+                    HapticManager.HeavyImpact();
                 }
                 else
                 {
@@ -110,6 +111,7 @@ namespace MarbleRace.Runtime.UI
                     if (winEffect != null) winEffect.SetActive(false);
                     if (loseEffect != null) loseEffect.SetActive(true);
                     AudioManager.Instance?.PlayLoseBuzz();
+                    HapticManager.LightTap();
                 }
             }
 
