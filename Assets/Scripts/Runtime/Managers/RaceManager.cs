@@ -41,6 +41,7 @@ namespace MarbleRace.Runtime.Managers
 
         public RaceResult LastResult { get; private set; }
         public List<MarbleController> ActiveMarbles => _activeMarbles;
+        public List<string> FinishOrder => _finishOrder;
         public bool IsRacing => _isRacing;
         public float RaceTime => _raceTimer;
 

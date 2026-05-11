@@ -70,23 +70,47 @@ namespace MarbleRace.Runtime.UI
             var marbles = raceManager.ActiveMarbles;
             if (marbles == null || marbles.Count == 0) return;
 
-            // Sort by Z position (progress)
-            var sorted = new List<MarbleController>(marbles);
-            sorted.Sort((a, b) => b.transform.position.z.CompareTo(a.transform.position.z));
-
             var sb = new System.Text.StringBuilder();
-            for (int i = 0; i < Mathf.Min(sorted.Count, 5); i++)
+            int position = 1;
+
+            // First: show finished marbles in locked finish order
+            var finishOrder = raceManager.FinishOrder;
+            foreach (var marbleId in finishOrder)
             {
-                var identity = sorted[i].GetComponent<MarbleIdentity>();
-                // Show position number with color hex marker instead of name
-                if (identity != null)
+                if (position > 5) break;
+                foreach (var marble in marbles)
                 {
-                    string hex = ColorUtility.ToHtmlStringRGB(identity.MarbleColor);
-                    sb.AppendLine($"{i + 1}. <color=#{hex}>\u25cf</color>");
+                    var identity = marble.GetComponent<MarbleIdentity>();
+                    if (identity != null && identity.MarbleId == marbleId)
+                    {
+                        string hex = ColorUtility.ToHtmlStringRGB(identity.MarbleColor);
+                        sb.AppendLine($"{position}. <color=#{hex}>\u25cf</color> \u2713");
+                        position++;
+                        break;
+                    }
                 }
-                else
+            }
+
+            // Then: show unfinished marbles sorted by z position
+            if (position <= 5)
+            {
+                var racing = new List<MarbleController>();
+                foreach (var marble in marbles)
                 {
-                    sb.AppendLine($"{i + 1}. \u25cf");
+                    if (marble != null && !marble.HasFinished)
+                        racing.Add(marble);
+                }
+                racing.Sort((a, b) => b.transform.position.z.CompareTo(a.transform.position.z));
+
+                for (int i = 0; i < racing.Count && position <= 5; i++)
+                {
+                    var identity = racing[i].GetComponent<MarbleIdentity>();
+                    if (identity != null)
+                    {
+                        string hex = ColorUtility.ToHtmlStringRGB(identity.MarbleColor);
+                        sb.AppendLine($"{position}. <color=#{hex}>\u25cf</color>");
+                    }
+                    position++;
                 }
             }
 
