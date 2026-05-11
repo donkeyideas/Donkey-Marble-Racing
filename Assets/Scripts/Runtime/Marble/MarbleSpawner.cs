@@ -76,18 +76,13 @@ namespace MarbleRace.Runtime.Marble
             float usableWidth = trackWidth - 1.5f; // leave margin from walls
 
             var positions = new Vector3[count];
-            int cols = 4; // 4 marbles per row
+            // All marbles in a single row
             for (int i = 0; i < count; i++)
             {
-                int row = i / cols;
-                int col = i % cols;
-
                 // Spread across track width using the local right direction
-                float lateralOffset = Mathf.Lerp(-usableWidth / 2f, usableWidth / 2f, (col + 0.5f) / cols);
-                // Stagger rows along the track forward direction
-                float forwardOffset = 1f + row * 1.2f;
+                float lateralOffset = Mathf.Lerp(-usableWidth / 2f, usableWidth / 2f, (i + 0.5f) / count);
 
-                Vector3 pos = trackStart + right * lateralOffset + forward * forwardOffset;
+                Vector3 pos = trackStart + right * lateralOffset + forward * 1f;
                 pos.y = surfaceY; // Keep consistent height on track surface
                 positions[i] = pos;
             }

@@ -19,11 +19,11 @@ namespace MarbleRace.Data
         public float marbleBounce = 0.6f;
 
         [Header("Random Nudge Forces")]
-        public float minNudgeInterval = 0.8f;
-        public float maxNudgeInterval = 2.0f;
-        public float minNudgeForce = 0.1f;
-        public float maxNudgeForce = 0.5f;
-        public float lateralNudgeStrength = 0.15f;
+        public float minNudgeInterval = 0.5f;
+        public float maxNudgeInterval = 1.2f;
+        public float minNudgeForce = 0.3f;
+        public float maxNudgeForce = 0.9f;
+        public float lateralNudgeStrength = 0.2f;
 
         [Header("Camera")]
         public float cameraFollowSpeed = 5f;

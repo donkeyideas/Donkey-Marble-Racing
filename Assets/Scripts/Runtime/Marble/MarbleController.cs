@@ -89,9 +89,9 @@ namespace MarbleRace.Runtime.Marble
             }
 
             // Clamp max speed to prevent marbles from flying off
-            if (_rb.linearVelocity.magnitude > 12f)
+            if (_rb.linearVelocity.magnitude > 18f)
             {
-                _rb.linearVelocity = _rb.linearVelocity.normalized * 12f;
+                _rb.linearVelocity = _rb.linearVelocity.normalized * 18f;
             }
         }
 
