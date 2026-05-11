@@ -15,7 +15,6 @@ GameObject:
   - component: {fileID: 6616610314586558329}
   - component: {fileID: 2038909226224643841}
   - component: {fileID: 3646946030254238458}
-  - component: {fileID: 3267523995023028956}
   m_Layer: 0
   m_Name: Marble
   m_TagString: Marble
@@ -169,15 +168,3 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MarbleRace.Runtime::MarbleRace.Runtime.Marble.MarbleIdentity
   marbleData: {fileID: 0}
---- !u!114 &3267523995023028956
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3654333333162905989}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dbf59590c345abd4e84e673113874d19, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: MarbleRace.Runtime::MarbleRace.Runtime.Marble.MarbleParticles
