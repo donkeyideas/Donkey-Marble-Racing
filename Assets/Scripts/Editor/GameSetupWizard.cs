@@ -509,6 +509,15 @@ public class GameSetupWizard : EditorWindow
         scaler.matchWidthOrHeight = 0.5f;
         canvasObj.AddComponent<GraphicRaycaster>();
 
+        // Safe area container for mobile notches
+        var safeArea = new GameObject("SafeArea");
+        var safeRT = safeArea.AddComponent<RectTransform>();
+        safeRT.SetParent(canvasObj.transform, false);
+        safeRT.anchorMin = Vector2.zero;
+        safeRT.anchorMax = Vector2.one;
+        safeRT.sizeDelta = Vector2.zero;
+        safeArea.AddComponent<SafeAreaHandler>();
+
         // --- Main Menu Panel ---
         var mainMenu = CreatePanel(canvasObj.transform, "MainMenuPanel", new Color(0.05f, 0.05f, 0.1f, 1f));
         CreateText(mainMenu.transform, "Title", "MARBLE RACE", 60, new Vector2(0, 300), Color.white);
@@ -520,6 +529,15 @@ public class GameSetupWizard : EditorWindow
             new Color(0.9f, 0.6f, 0.1f));
         var statsBtn = CreateButton(mainMenu.transform, "StatsButton", "STATS", new Vector2(0, -260), new Vector2(300, 60),
             new Color(0.3f, 0.5f, 0.9f));
+        var settingsBtn = CreateButton(mainMenu.transform, "SettingsButton", "SETTINGS", new Vector2(0, -350), new Vector2(300, 60),
+            new Color(0.4f, 0.4f, 0.5f));
+
+        // Add animations and button feedback to main menu
+        mainMenu.AddComponent<PanelAnimator>();
+        playBtn.AddComponent<ButtonFeedback>();
+        dailyBtn.AddComponent<ButtonFeedback>();
+        statsBtn.AddComponent<ButtonFeedback>();
+        settingsBtn.AddComponent<ButtonFeedback>();
 
         var mainMenuScript = mainMenu.AddComponent<MainMenuPanel>();
         var mmSO = new SerializedObject(mainMenuScript);
@@ -583,6 +601,8 @@ public class GameSetupWizard : EditorWindow
         var skipBtn = CreateButton(betting.transform, "SkipBet", "SKIP - JUST WATCH", new Vector2(0, -310), new Vector2(250, 50),
             new Color(0.4f, 0.4f, 0.5f));
 
+        betting.AddComponent<PanelAnimator>();
+        confirmBtn.AddComponent<ButtonFeedback>();
         var bettingScript = betting.AddComponent<BettingPanel>();
         var bpSO = new SerializedObject(bettingScript);
         bpSO.FindProperty("bettingManager").objectReferenceValue = managers.bettingManager;
@@ -662,6 +682,9 @@ public class GameSetupWizard : EditorWindow
         var menuBtn = CreateButton(results.transform, "MainMenuButton", "MAIN MENU", new Vector2(0, -340), new Vector2(250, 50),
             new Color(0.4f, 0.4f, 0.5f));
 
+        results.AddComponent<PanelAnimator>();
+        playAgainBtn.AddComponent<ButtonFeedback>();
+        menuBtn.AddComponent<ButtonFeedback>();
         var resultsScript = results.AddComponent<ResultsPanel>();
         var rpSO = new SerializedObject(resultsScript);
         rpSO.FindProperty("raceManager").objectReferenceValue = managers.raceManager;
@@ -698,6 +721,59 @@ public class GameSetupWizard : EditorWindow
 
         // Wire stats button to show stats panel
         statsBtn.GetComponent<Button>().onClick.AddListener(() => statsPanelScript.Show());
+
+        // --- Settings Panel ---
+        var settingsPanel = CreatePanel(canvasObj.transform, "SettingsPanel", new Color(0.03f, 0.03f, 0.08f, 0.97f));
+        settingsPanel.SetActive(false);
+        CreateText(settingsPanel.transform, "SettingsTitle", "SETTINGS", 42, new Vector2(0, 400), Color.white);
+
+        // Sound toggle
+        CreateText(settingsPanel.transform, "SoundLabel", "Sound", 24, new Vector2(-100, 200), Color.white);
+        var soundToggleObj = new GameObject("SoundToggle");
+        var soundToggleRT = soundToggleObj.AddComponent<RectTransform>();
+        soundToggleRT.SetParent(settingsPanel.transform, false);
+        soundToggleRT.anchoredPosition = new Vector2(150, 200);
+        soundToggleRT.sizeDelta = new Vector2(80, 40);
+        var soundBg = soundToggleObj.AddComponent<Image>();
+        soundBg.color = new Color(0.2f, 0.5f, 0.3f);
+        var soundToggle = soundToggleObj.AddComponent<Toggle>();
+        soundToggle.isOn = true;
+
+        // Particles toggle
+        CreateText(settingsPanel.transform, "ParticlesLabel", "Particles", 24, new Vector2(-100, 120), Color.white);
+        var particlesToggleObj = new GameObject("ParticlesToggle");
+        var particlesToggleRT = particlesToggleObj.AddComponent<RectTransform>();
+        particlesToggleRT.SetParent(settingsPanel.transform, false);
+        particlesToggleRT.anchoredPosition = new Vector2(150, 120);
+        particlesToggleRT.sizeDelta = new Vector2(80, 40);
+        var particlesBg = particlesToggleObj.AddComponent<Image>();
+        particlesBg.color = new Color(0.2f, 0.5f, 0.3f);
+        var particlesToggle = particlesToggleObj.AddComponent<Toggle>();
+        particlesToggle.isOn = true;
+
+        // Quality slider
+        CreateText(settingsPanel.transform, "QualityLabel", "Quality", 24, new Vector2(-100, 40), Color.white);
+        var qualityLabel = CreateText(settingsPanel.transform, "QualityValue", "HIGH", 24, new Vector2(150, 40), Color.cyan);
+        var qualitySlider = CreateSlider(settingsPanel.transform, "QualitySlider", new Vector2(0, -30), new Vector2(350, 30));
+
+        // Reset stats button
+        var resetBtn = CreateButton(settingsPanel.transform, "ResetStatsButton", "RESET STATS", new Vector2(0, -150), new Vector2(250, 50),
+            new Color(0.7f, 0.2f, 0.2f));
+        var closeSettingsBtn = CreateButton(settingsPanel.transform, "CloseSettingsButton", "CLOSE", new Vector2(0, -420), new Vector2(250, 60),
+            new Color(0.5f, 0.2f, 0.2f));
+
+        var settingsPanelScript = settingsPanel.AddComponent<SettingsPanel>();
+        var stSO = new SerializedObject(settingsPanelScript);
+        stSO.FindProperty("soundToggle").objectReferenceValue = soundToggle;
+        stSO.FindProperty("particlesToggle").objectReferenceValue = particlesToggle;
+        stSO.FindProperty("qualitySlider").objectReferenceValue = qualitySlider.GetComponent<Slider>();
+        stSO.FindProperty("qualityLabel").objectReferenceValue = qualityLabel.GetComponent<TMP_Text>();
+        stSO.FindProperty("closeButton").objectReferenceValue = closeSettingsBtn.GetComponent<Button>();
+        stSO.FindProperty("resetStatsButton").objectReferenceValue = resetBtn.GetComponent<Button>();
+        stSO.ApplyModifiedProperties();
+
+        // Wire settings button
+        settingsBtn.GetComponent<Button>().onClick.AddListener(() => settingsPanelScript.Show());
 
         // --- Countdown Overlay ---
         var countdownOverlay = new GameObject("CountdownOverlay");
@@ -954,6 +1030,20 @@ public class GameSetupWizard : EditorWindow
         // Set ambient lighting
         RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
         RenderSettings.ambientLight = new Color(0.15f, 0.15f, 0.2f);
+
+        // Procedural skybox — dark gradient with purple/blue tones
+        var skyMat = new Material(Shader.Find("Skybox/Procedural"));
+        if (skyMat != null)
+        {
+            skyMat.SetFloat("_SunSize", 0.02f);
+            skyMat.SetFloat("_SunSizeConvergence", 10f);
+            skyMat.SetFloat("_AtmosphereThickness", 0.8f);
+            skyMat.SetColor("_SkyTint", new Color(0.1f, 0.05f, 0.2f));
+            skyMat.SetColor("_GroundColor", new Color(0.02f, 0.02f, 0.05f));
+            skyMat.SetFloat("_Exposure", 0.5f);
+            RenderSettings.skybox = skyMat;
+            AssetDatabase.CreateAsset(skyMat, "Assets/Data/Skybox.mat");
+        }
 
         // Add fog for depth
         RenderSettings.fog = true;
