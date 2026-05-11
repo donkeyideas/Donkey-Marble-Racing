@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: TrackData
   m_EditorClassIdentifier: MarbleRace.Data::MarbleRace.Data.TrackData
   trackId: track_01
-  trackName: MultiPath Track
-  trackType: 3
+  trackName: Funnel Track
+  trackType: 2
   checkpointCount: 3
   expectedRaceTime: 30
   startPositions:

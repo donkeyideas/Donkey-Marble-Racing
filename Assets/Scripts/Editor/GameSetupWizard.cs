@@ -519,7 +519,7 @@ public class GameSetupWizard : EditorWindow
 
         // --- Main Menu Panel ---
         var mainMenu = CreatePanel(canvasObj.transform, "MainMenuPanel", new Color(0.05f, 0.05f, 0.1f, 1f));
-        CreateText(mainMenu.transform, "Title", "MARBLE RACE", 60, new Vector2(0, 300), Color.white);
+        CreateText(mainMenu.transform, "Title", "DONKEY MARBLE RACING", 48, new Vector2(0, 300), Color.white);
         CreateText(mainMenu.transform, "Subtitle", "Place your bets!", 24, new Vector2(0, 220), Color.gray);
         var coinDisplay = CreateText(mainMenu.transform, "CoinBalance", "1000 coins", 32, new Vector2(0, 140), Color.yellow);
         var playBtn = CreateButton(mainMenu.transform, "PlayButton", "RACE!", new Vector2(0, -50), new Vector2(400, 80),

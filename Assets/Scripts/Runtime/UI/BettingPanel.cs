@@ -82,8 +82,7 @@ namespace MarbleRace.Runtime.UI
                 var text = buttonObj.GetComponentInChildren<TMP_Text>();
                 var image = buttonObj.GetComponent<Image>();
 
-                // Show marble color circle, no text name
-                if (text != null) text.text = "";
+                if (text != null) text.text = identity.MarbleName;
                 if (image != null) image.color = identity.MarbleColor;
 
                 string marbleId = identity.MarbleId;
@@ -161,7 +160,22 @@ namespace MarbleRace.Runtime.UI
                 balanceText.text = $"{economyManager.Balance} coins";
 
             if (selectedMarbleText != null)
-                selectedMarbleText.text = string.IsNullOrEmpty(_selectedMarbleId) ? "Select a marble" : _selectedMarbleId;
+            {
+                string displayName = "Select a marble";
+                if (!string.IsNullOrEmpty(_selectedMarbleId) && _marbles != null)
+                {
+                    foreach (var m in _marbles)
+                    {
+                        var id = m.GetComponent<MarbleIdentity>();
+                        if (id != null && id.MarbleId == _selectedMarbleId)
+                        {
+                            displayName = id.MarbleName;
+                            break;
+                        }
+                    }
+                }
+                selectedMarbleText.text = displayName;
+            }
 
             if (betAmountText != null)
                 betAmountText.text = $"Bet: {_currentBetAmount}";

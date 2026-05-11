@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using MarbleRace.Core.Economy;
 using MarbleRace.Events;
@@ -70,6 +71,13 @@ namespace MarbleRace.Runtime.Managers
 
         public void OnRaceFinished()
         {
+            StartCoroutine(DelayedResults());
+        }
+
+        private IEnumerator DelayedResults()
+        {
+            // Let the player watch the top-down finish camera for a moment
+            yield return new WaitForSeconds(2.5f);
             TransitionTo(GameState.Results);
         }
 

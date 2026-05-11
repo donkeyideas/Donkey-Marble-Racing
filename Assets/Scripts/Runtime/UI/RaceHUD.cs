@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
@@ -37,9 +38,29 @@ namespace MarbleRace.Runtime.UI
             if (countdownText != null)
             {
                 countdownText.text = count > 0 ? count.ToString() : "GO!";
-                // Scale animation for impact
-                countdownText.transform.localScale = Vector3.one * 1.5f;
+                StopAllCoroutines();
+                StartCoroutine(PunchScale(countdownText.transform));
             }
+        }
+
+        private IEnumerator PunchScale(Transform target)
+        {
+            float duration = 0.4f;
+            float elapsed = 0f;
+            Vector3 start = Vector3.one * 1.8f;
+            Vector3 end = Vector3.one;
+
+            target.localScale = start;
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float t = elapsed / duration;
+                // Elastic ease-out for a bouncy punch feel
+                float ease = 1f - Mathf.Cos(t * Mathf.PI * 2f) * Mathf.Pow(1f - t, 2f);
+                target.localScale = Vector3.LerpUnclamped(start, end, ease);
+                yield return null;
+            }
+            target.localScale = end;
         }
 
         public void HideCountdown()
@@ -84,7 +105,7 @@ namespace MarbleRace.Runtime.UI
                     if (identity != null && identity.MarbleId == marbleId)
                     {
                         string hex = ColorUtility.ToHtmlStringRGB(identity.MarbleColor);
-                        sb.AppendLine($"{position}. <color=#{hex}>\u25cf</color>");
+                        sb.AppendLine($"{position}. <color=#{hex}>\u25cf {identity.MarbleName}</color>");
                         position++;
                         break;
                     }
@@ -108,7 +129,7 @@ namespace MarbleRace.Runtime.UI
                     if (identity != null)
                     {
                         string hex = ColorUtility.ToHtmlStringRGB(identity.MarbleColor);
-                        sb.AppendLine($"{position}. <color=#{hex}>\u25cf</color>");
+                        sb.AppendLine($"{position}. <color=#{hex}>\u25cf {identity.MarbleName}</color>");
                     }
                     position++;
                 }

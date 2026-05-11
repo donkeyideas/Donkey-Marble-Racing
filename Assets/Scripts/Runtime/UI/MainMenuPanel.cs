@@ -12,6 +12,7 @@ namespace MarbleRace.Runtime.UI
         [SerializeField] private Button dailyRewardButton;
 
         [Header("Display")]
+        [SerializeField] private Image logoImage;
         [SerializeField] private TMP_Text titleText;
         [SerializeField] private TMP_Text coinBalanceText;
         [SerializeField] private TMP_Text welcomeText;
