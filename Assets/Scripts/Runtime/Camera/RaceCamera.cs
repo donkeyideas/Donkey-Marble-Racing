@@ -72,12 +72,12 @@ namespace MarbleRace.Runtime.Camera
 
         private void UpdateFinishCamera()
         {
-            // Stay elevated and far back to show the whole bucket area
+            // Top-down view looking straight down at the bucket
             Vector3 targetPos = _finishFocusTarget.position;
-            Vector3 desiredPos = targetPos + new Vector3(0f, 10f, -14f);
+            Vector3 desiredPos = targetPos + new Vector3(0f, 15f, 0f);
             transform.position = Vector3.Lerp(transform.position, desiredPos, Time.unscaledDeltaTime * 2f);
 
-            Quaternion lookRot = Quaternion.LookRotation(targetPos - transform.position);
+            Quaternion lookRot = Quaternion.LookRotation(Vector3.down, Vector3.forward);
             transform.rotation = Quaternion.Slerp(transform.rotation, lookRot, Time.unscaledDeltaTime * 3f);
         }
 
