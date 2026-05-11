@@ -493,6 +493,18 @@ public class GameSetupWizard : EditorWindow
         rmSOLive.FindProperty("liveBetManager").objectReferenceValue = liveBetMgr;
         rmSOLive.ApplyModifiedProperties();
 
+        // --- CrowdReactionManager ---
+        var crObj = new GameObject("CrowdReactionManager");
+        var crowdReaction = crObj.AddComponent<CrowdReactionManager>();
+        var crSO = new SerializedObject(crowdReaction);
+        crSO.FindProperty("raceManager").objectReferenceValue = refs.raceManager;
+        crSO.ApplyModifiedProperties();
+
+        // Wire CrowdReactionManager to RaceManager
+        var rmSOCrowd = new SerializedObject(refs.raceManager);
+        rmSOCrowd.FindProperty("crowdReactionManager").objectReferenceValue = crowdReaction;
+        rmSOCrowd.ApplyModifiedProperties();
+
         // Wire FinishLine
         var finishLine = Object.FindAnyObjectByType<FinishLine>();
         if (finishLine != null)

@@ -33,6 +33,10 @@ namespace MarbleRace.Runtime.Track
                     floorColor = new Color(0.12f, 0.22f, 0.12f); // forest green
                     wallColor = new Color(0.05f, 0.1f, 0.05f);
                     break;
+                case TrackType.Oval:
+                    floorColor = new Color(0.28f, 0.2f, 0.1f); // golden brown
+                    wallColor = new Color(0.14f, 0.1f, 0.05f);
+                    break;
                 default: // Downhill
                     floorColor = new Color(0.15f, 0.18f, 0.3f); // original blue-gray
                     wallColor = new Color(0.08f, 0.08f, 0.12f);
@@ -42,7 +46,7 @@ namespace MarbleRace.Runtime.Track
             var wallMat = MakeMat("WallMat", wallColor, 0.6f, 0.85f);
 
             // More segments for tighter curves, prevents gaps between blocks
-            int segmentCount = (type == TrackType.Zigzag || type == TrackType.Spiral) ? 100 : 80;
+            int segmentCount = (type == TrackType.Zigzag || type == TrackType.Spiral || type == TrackType.Oval) ? 100 : 80;
             float trackWidth = 5f;
             float wallHeight = 3.5f;
 
@@ -61,6 +65,7 @@ namespace MarbleRace.Runtime.Track
                 case TrackType.Spiral: neonColor = new Color(0.2f, 0.6f, 1f); break;
                 case TrackType.Funnel: neonColor = new Color(0.7f, 0.3f, 1f); break;
                 case TrackType.MultiPath: neonColor = new Color(0.2f, 1f, 0.4f); break;
+                case TrackType.Oval: neonColor = new Color(1f, 0.8f, 0.2f); break;
                 default: neonColor = new Color(0.3f, 0.7f, 1f); break;
             }
             var neonMat = MakeEmissiveMat("NeonMat", neonColor, neonColor, 3f, 0f, 0.95f);
@@ -193,30 +198,55 @@ namespace MarbleRace.Runtime.Track
         public static Vector3 CurvePoint(float t)
         {
             float trackLength = 80f;
-            float z = t * trackLength;
-            float x, y;
+            float x, y, z;
 
             switch (_currentType)
             {
+                case TrackType.Oval:
+                    // Oval track: elliptical path that slopes downward.
+                    // Makes 2 full laps of an elongated oval while descending.
+                    // The z coordinate still goes 0→80 for finish detection.
+                    float laps = 2f;
+                    float angle = t * laps * Mathf.PI * 2f;
+                    float radiusX = 12f; // wide oval
+                    float radiusZ = 6f;  // shorter on z-axis (makes it oval)
+
+                    // Oval centered around z=40, x=0
+                    x = Mathf.Sin(angle) * radiusX;
+                    float ovalZ = 40f + Mathf.Cos(angle) * radiusZ;
+
+                    // But we need z to go from 0 to 80 for the finish line detection.
+                    // Solution: use the oval for x offset, keep z linear.
+                    z = t * trackLength;
+                    x = Mathf.Sin(angle) * radiusX;
+
+                    // Continuous downward slope — steeper than other tracks since it's longer in XZ
+                    y = Mathf.Lerp(6.0f, -6.0f, t);
+                    break;
+
                 case TrackType.Zigzag:
+                    z = t * trackLength;
                     y = Mathf.Lerp(4.0f, -5.0f, t);
                     // Use sine wave instead of triangle wave for smoother curves
                     x = Mathf.Sin(t * Mathf.PI * 5f) * 2f;
                     break;
 
                 case TrackType.Spiral:
+                    z = t * trackLength;
                     y = Mathf.Lerp(3.0f, -5.0f, t);
                     float radius = 1.2f + Mathf.Sin(t * Mathf.PI) * 1.2f;
                     x = Mathf.Sin(t * Mathf.PI * 4f) * radius;
                     break;
 
                 case TrackType.Funnel:
+                    z = t * trackLength;
                     y = Mathf.Lerp(3.0f, -4.5f, t);
                     float amp = 2f * (1f - Mathf.Abs(t - 0.5f) * 2f);
                     x = Mathf.Sin(t * Mathf.PI * 3f) * Mathf.Max(amp, 0.5f);
                     break;
 
                 default: // Downhill + MultiPath
+                    z = t * trackLength;
                     y = Mathf.Lerp(3.0f, -4.5f, t);
                     x = Mathf.Sin(t * Mathf.PI * 3f) * 1.8f;
                     break;
@@ -239,6 +269,7 @@ namespace MarbleRace.Runtime.Track
                 case TrackType.Spiral: return "Spiral Mountain";
                 case TrackType.Funnel: return "The Funnel";
                 case TrackType.MultiPath: return "Split Path";
+                case TrackType.Oval: return "Oval Descent";
                 default: return "Downhill Rush";
             }
         }

@@ -8,7 +8,8 @@ namespace MarbleRace.Data
         Zigzag,
         Funnel,
         MultiPath,
-        Spiral
+        Spiral,
+        Oval
     }
 
     [CreateAssetMenu(menuName = "MarbleRace/Data/Track Data")]

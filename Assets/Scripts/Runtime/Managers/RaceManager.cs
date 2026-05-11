@@ -26,6 +26,7 @@ namespace MarbleRace.Runtime.Managers
         [SerializeField] private RaceCamera raceCamera;
         [SerializeField] private WinCelebration winCelebration;
         [SerializeField] private LiveBetManager liveBetManager;
+        [SerializeField] private CrowdReactionManager crowdReactionManager;
 
         [Header("Events")]
         [SerializeField] private GameEvent onRacePrepared;
@@ -70,6 +71,10 @@ namespace MarbleRace.Runtime.Managers
             if (liveBetManager != null)
                 liveBetManager.ResetForNewRace();
 
+            // Reset crowd reactions
+            if (crowdReactionManager != null)
+                crowdReactionManager.ResetForNewRace();
+
             // Rebuild track with a random type
             RebuildTrack();
 
@@ -103,7 +108,7 @@ namespace MarbleRace.Runtime.Managers
                 Destroy(existingTrack);
 
             // Pick a random track type
-            var types = new[] { TrackType.Downhill, TrackType.Zigzag, TrackType.Funnel, TrackType.Spiral, TrackType.MultiPath };
+            var types = new[] { TrackType.Downhill, TrackType.Zigzag, TrackType.Funnel, TrackType.Spiral, TrackType.MultiPath, TrackType.Oval };
             _currentTrackType = types[Random.Range(0, types.Length)];
 
             // Build the new track

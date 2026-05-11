@@ -21,10 +21,10 @@ MonoBehaviour:
   marbleDrag: 0.1
   marbleAngularDrag: 0.5
   marbleBounce: 0.6
-  minNudgeInterval: 0.8
-  maxNudgeInterval: 2
-  minNudgeForce: 0.1
-  maxNudgeForce: 0.4
-  lateralNudgeStrength: 0.1
+  minNudgeInterval: 0.5
+  maxNudgeInterval: 1.2
+  minNudgeForce: 0.3
+  maxNudgeForce: 0.9
+  lateralNudgeStrength: 0.2
   cameraFollowSpeed: 5
   cameraLookAhead: 2

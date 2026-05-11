@@ -57,6 +57,7 @@ namespace MarbleRace.Runtime.Managers
             if (crowdSource == null || crowdAmbience == null) return;
             crowdSource.clip = crowdAmbience;
             crowdSource.loop = true;
+            crowdSource.volume = 0.3f;
             crowdSource.Play();
         }
 
@@ -64,6 +65,18 @@ namespace MarbleRace.Runtime.Managers
         {
             if (crowdSource != null)
                 crowdSource.Stop();
+        }
+
+        /// <summary>
+        /// Ramp crowd volume based on race progress (gets louder near finish).
+        /// </summary>
+        public void SetCrowdIntensity(float intensity)
+        {
+            if (crowdSource != null && crowdSource.isPlaying)
+            {
+                crowdSource.volume = Mathf.Lerp(0.2f, 0.8f, intensity);
+                crowdSource.pitch = Mathf.Lerp(0.95f, 1.1f, intensity);
+            }
         }
 
         private void PlaySFX(AudioClip clip, float volumeMultiplier = 1f)
