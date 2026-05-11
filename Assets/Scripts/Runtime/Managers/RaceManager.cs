@@ -137,9 +137,12 @@ namespace MarbleRace.Runtime.Managers
             if (raceHUD != null)
                 raceHUD.HideCountdown();
 
-            // Tell camera to follow marbles
+            // Tell camera to follow marbles (set track type first for correct offset)
             if (raceCamera != null)
+            {
+                raceCamera.SetTrackType(_currentTrackType);
                 raceCamera.SetMarbles(_activeMarbles);
+            }
 
             // Start crowd ambience
             AudioManager.Instance?.StartCrowdAmbience();

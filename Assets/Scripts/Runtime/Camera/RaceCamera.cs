@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using MarbleRace.Data;
 using MarbleRace.Runtime.Marble;
 
 namespace MarbleRace.Runtime.Camera
@@ -7,6 +8,8 @@ namespace MarbleRace.Runtime.Camera
     public class RaceCamera : MonoBehaviour
     {
         private Vector3 _offset = new Vector3(0f, 6f, -10f);
+        private Vector3 _defaultOffset = new Vector3(0f, 6f, -10f);
+        private Vector3 _ovalOffset = new Vector3(0f, 18f, -16f); // Much higher for wide oval curves
         private float _smoothTime = 0.4f;
         private float _rotationSmooth = 3f;
 
@@ -25,15 +28,32 @@ namespace MarbleRace.Runtime.Camera
         private float _finishZoomTimer;
         private bool _inFinishMode;
 
+        /// <summary>
+        /// Call before SetMarbles to configure camera for the current track type.
+        /// </summary>
+        public void SetTrackType(MarbleRace.Data.TrackType trackType)
+        {
+            if (trackType == MarbleRace.Data.TrackType.Oval)
+            {
+                _offset = _ovalOffset;
+                var cam = GetComponent<UnityEngine.Camera>();
+                if (cam != null)
+                    cam.fieldOfView = 75f;
+            }
+            else
+            {
+                _offset = _defaultOffset;
+                var cam = GetComponent<UnityEngine.Camera>();
+                if (cam != null)
+                    cam.fieldOfView = 60f;
+            }
+        }
+
         public void SetMarbles(List<MarbleController> marbles)
         {
             _marbles = marbles;
             _active = true;
             _inFinishMode = false;
-
-            var cam = GetComponent<UnityEngine.Camera>();
-            if (cam != null)
-                cam.fieldOfView = 60f;
 
             Vector3 center = GetGroupCenter();
             _smoothTarget = center;
