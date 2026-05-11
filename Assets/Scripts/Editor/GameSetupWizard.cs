@@ -252,7 +252,6 @@ public class GameSetupWizard : EditorWindow
         // Scripts
         var controller = marble.AddComponent<MarbleController>();
         marble.AddComponent<MarbleIdentity>();
-        marble.AddComponent<MarbleParticles>();
 
         // Save prefab
         var prefab = PrefabUtility.SaveAsPrefabAsset(marble, "Assets/Prefabs/Marble.prefab");

@@ -16,10 +16,10 @@ MonoBehaviour:
   marbleName: Frost
   marbleColor: {r: 0.1, g: 0.9, b: 0.9, a: 1}
   rarity: 1
-  massMultiplier: 0.6
-  dragMultiplier: 0.04
-  bounciness: 0.9
-  nudgeStrength: 1.4
+  massMultiplier: 0.9
+  dragMultiplier: 0.09
+  bounciness: 0.7
+  nudgeStrength: 1
   marbleMaterial: {fileID: 0}
   trailPrefab: {fileID: 0}
   description: 

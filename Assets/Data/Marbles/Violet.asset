@@ -17,9 +17,9 @@ MonoBehaviour:
   marbleColor: {r: 0.6, g: 0.1, b: 0.9, a: 1}
   rarity: 1
   massMultiplier: 1.1
-  dragMultiplier: 0.15
-  bounciness: 0.4
-  nudgeStrength: 0.9
+  dragMultiplier: 0.09
+  bounciness: 0.5
+  nudgeStrength: 0.95
   marbleMaterial: {fileID: 0}
   trailPrefab: {fileID: 0}
   description: 

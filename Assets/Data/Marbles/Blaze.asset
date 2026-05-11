@@ -16,10 +16,10 @@ MonoBehaviour:
   marbleName: Blaze
   marbleColor: {r: 1, g: 0.5, b: 0, a: 1}
   rarity: 2
-  massMultiplier: 1.2
+  massMultiplier: 1.1
   dragMultiplier: 0.07
-  bounciness: 0.5
-  nudgeStrength: 1.2
+  bounciness: 0.55
+  nudgeStrength: 1.05
   marbleMaterial: {fileID: 0}
   trailPrefab: {fileID: 0}
   description: 

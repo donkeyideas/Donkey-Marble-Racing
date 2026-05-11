@@ -75,17 +75,11 @@ namespace MarbleRace.Runtime.Camera
             _finishZoomTimer += Time.unscaledDeltaTime;
 
             Vector3 targetPos = _finishFocusTarget.position;
-            float angle = _finishZoomTimer * 30f;
-            float dist = Mathf.Lerp(8f, 5f, Mathf.Clamp01(_finishZoomTimer / 3f));
-            float height = Mathf.Lerp(5f, 3f, Mathf.Clamp01(_finishZoomTimer / 3f));
+            // Simple elevated view looking down at the winner — no orbit
+            float t = Mathf.Clamp01(_finishZoomTimer / 1.5f);
+            Vector3 desiredPos = targetPos + new Vector3(0f, 6f, -8f);
+            transform.position = Vector3.Lerp(transform.position, desiredPos, Time.unscaledDeltaTime * 3f);
 
-            Vector3 orbitPos = targetPos + new Vector3(
-                Mathf.Sin(angle * Mathf.Deg2Rad) * dist,
-                height,
-                Mathf.Cos(angle * Mathf.Deg2Rad) * dist
-            );
-
-            transform.position = Vector3.Lerp(transform.position, orbitPos, Time.unscaledDeltaTime * 3f);
             Quaternion lookRot = Quaternion.LookRotation(targetPos - transform.position);
             transform.rotation = Quaternion.Slerp(transform.rotation, lookRot, Time.unscaledDeltaTime * 5f);
         }

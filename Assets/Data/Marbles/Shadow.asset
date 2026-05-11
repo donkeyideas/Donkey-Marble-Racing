@@ -16,10 +16,10 @@ MonoBehaviour:
   marbleName: Shadow
   marbleColor: {r: 0.3, g: 0.3, b: 0.35, a: 1}
   rarity: 3
-  massMultiplier: 1.5
-  dragMultiplier: 0.03
-  bounciness: 0.3
-  nudgeStrength: 0.7
+  massMultiplier: 1.2
+  dragMultiplier: 0.06
+  bounciness: 0.5
+  nudgeStrength: 0.95
   marbleMaterial: {fileID: 0}
   trailPrefab: {fileID: 0}
   description: 
