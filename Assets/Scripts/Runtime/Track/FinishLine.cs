@@ -26,6 +26,16 @@ namespace MarbleRace.Runtime.Track
 
         private void OnTriggerEnter(Collider other)
         {
+            HandleMarbleFinish(other);
+        }
+
+        private void OnTriggerStay(Collider other)
+        {
+            HandleMarbleFinish(other);
+        }
+
+        private void HandleMarbleFinish(Collider other)
+        {
             if (!other.CompareTag("Marble")) return;
 
             var marble = other.GetComponent<MarbleController>();

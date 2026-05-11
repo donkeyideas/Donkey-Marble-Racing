@@ -319,7 +319,7 @@ public class GameSetupWizard : EditorWindow
 
         var col = finishObj.AddComponent<BoxCollider>();
         col.isTrigger = true;
-        col.size = new Vector3(8, 8, 8);
+        col.size = new Vector3(10, 12, 10);
 
         finishObj.AddComponent<FinishLine>();
 
