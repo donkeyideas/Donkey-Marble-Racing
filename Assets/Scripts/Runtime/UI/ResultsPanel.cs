@@ -54,20 +54,23 @@ namespace MarbleRace.Runtime.UI
             // Resolve bets
             var payouts = bettingManager.ResolveBets(result.WinnerMarbleId);
 
-            // Find winner marble name
-            string winnerName = result.WinnerMarbleId;
+            // Find winner marble color
+            Color winnerColor = Color.white;
             foreach (var marble in raceManager.ActiveMarbles)
             {
                 var identity = marble.GetComponent<MarbleIdentity>();
                 if (identity != null && identity.MarbleId == result.WinnerMarbleId)
                 {
-                    winnerName = identity.MarbleName;
+                    winnerColor = identity.MarbleColor;
                     break;
                 }
             }
 
             if (winnerText != null)
-                winnerText.text = $"Winner: {winnerName}!";
+            {
+                string hex = ColorUtility.ToHtmlStringRGB(winnerColor);
+                winnerText.text = $"Winner: <color=#{hex}>\u25CF</color>";
+            }
 
             if (raceTimeText != null)
                 raceTimeText.text = result.WasTimeout ? "TIME OUT" : $"Time: {result.RaceDuration:F2}s";
@@ -136,20 +139,23 @@ namespace MarbleRace.Runtime.UI
                 var entry = Instantiate(finishOrderEntryPrefab, finishOrderContainer);
                 var text = entry.GetComponentInChildren<TMP_Text>();
 
-                // Find marble name
-                string name = order[i];
+                // Find marble color
+                Color marbleColor = Color.white;
                 foreach (var marble in raceManager.ActiveMarbles)
                 {
                     var identity = marble.GetComponent<MarbleIdentity>();
                     if (identity != null && identity.MarbleId == order[i])
                     {
-                        name = identity.MarbleName;
+                        marbleColor = identity.MarbleColor;
                         break;
                     }
                 }
 
                 if (text != null)
-                    text.text = $"{i + 1}. {name}";
+                {
+                    string hex = ColorUtility.ToHtmlStringRGB(marbleColor);
+                    text.text = $"{i + 1}. <color=#{hex}>\u25CF</color>";
+                }
             }
         }
 
