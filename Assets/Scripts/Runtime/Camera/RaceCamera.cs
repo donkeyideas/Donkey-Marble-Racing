@@ -72,16 +72,13 @@ namespace MarbleRace.Runtime.Camera
 
         private void UpdateFinishCamera()
         {
-            _finishZoomTimer += Time.unscaledDeltaTime;
-
+            // Stay elevated and far back to show the whole bucket area
             Vector3 targetPos = _finishFocusTarget.position;
-            // Simple elevated view looking down at the winner — no orbit
-            float t = Mathf.Clamp01(_finishZoomTimer / 1.5f);
-            Vector3 desiredPos = targetPos + new Vector3(0f, 6f, -8f);
-            transform.position = Vector3.Lerp(transform.position, desiredPos, Time.unscaledDeltaTime * 3f);
+            Vector3 desiredPos = targetPos + new Vector3(0f, 10f, -14f);
+            transform.position = Vector3.Lerp(transform.position, desiredPos, Time.unscaledDeltaTime * 2f);
 
             Quaternion lookRot = Quaternion.LookRotation(targetPos - transform.position);
-            transform.rotation = Quaternion.Slerp(transform.rotation, lookRot, Time.unscaledDeltaTime * 5f);
+            transform.rotation = Quaternion.Slerp(transform.rotation, lookRot, Time.unscaledDeltaTime * 3f);
         }
 
         public void Shake(float intensity, float duration)

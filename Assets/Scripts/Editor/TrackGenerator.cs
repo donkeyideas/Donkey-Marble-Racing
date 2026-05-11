@@ -167,11 +167,12 @@ public static class TrackGenerator
         var boostHazard = boostPad.AddComponent<TrackHazard>();
         SetHazardProperties(boostHazard, HazardType.BoostPad, 6f, 0f);
 
-        // BUCKET at the end to catch marbles
+        // BUCKET at the end to catch marbles — fully enclosed box
         Vector3 lastPoint = points[segmentCount];
         Vector3 bucketCenter = lastPoint + new Vector3(0f, -2f, 2f);
         MakeCube(track, "BucketFloor", bucketCenter, new Vector3(7, 0.5f, 5), floorMat);
         MakeCube(track, "BucketBack", bucketCenter + new Vector3(0, 2f, 2.75f), new Vector3(7, 4f, 0.5f), wallMat);
+        MakeCube(track, "BucketFront", bucketCenter + new Vector3(0, 2f, -2.75f), new Vector3(7, 4f, 0.5f), wallMat);
         MakeCube(track, "BucketLeft", bucketCenter + new Vector3(-3.75f, 2f, 0), new Vector3(0.5f, 4f, 5), wallMat);
         MakeCube(track, "BucketRight", bucketCenter + new Vector3(3.75f, 2f, 0), new Vector3(0.5f, 4f, 5), wallMat);
 
