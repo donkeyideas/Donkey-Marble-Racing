@@ -24,6 +24,7 @@ namespace MarbleRace.Runtime.Managers
         [SerializeField] private FinishLine finishLine;
         [SerializeField] private RaceHUD raceHUD;
         [SerializeField] private RaceCamera raceCamera;
+        [SerializeField] private WinCelebration winCelebration;
 
         [Header("Events")]
         [SerializeField] private GameEvent onRacePrepared;
@@ -190,6 +191,8 @@ namespace MarbleRace.Runtime.Managers
                         _firstFinishTriggered = true;
                         if (raceCamera != null)
                             raceCamera.FocusOnMarble(marble.transform);
+                        if (winCelebration != null)
+                            winCelebration.Play(marble.transform.position);
                         AudioManager.Instance?.PlayCrowdCheer();
                     }
 

@@ -822,6 +822,15 @@ public class GameSetupWizard : EditorWindow
         rmSO2.FindProperty("raceHUD").objectReferenceValue = hudScript;
         rmSO2.ApplyModifiedProperties();
 
+        // Wire RaceHUD to BettingPanel for bet indicator
+        var bettingScript2 = Object.FindAnyObjectByType<BettingPanel>(FindObjectsInactive.Include);
+        if (bettingScript2 != null)
+        {
+            var bpSO2 = new SerializedObject(bettingScript2);
+            bpSO2.FindProperty("raceHUD").objectReferenceValue = hudScript;
+            bpSO2.ApplyModifiedProperties();
+        }
+
         return canvasObj;
     }
 
@@ -858,9 +867,14 @@ public class GameSetupWizard : EditorWindow
 
         var raceCamera = camObj.AddComponent<RaceCamera>();
 
-        // Wire RaceCamera to RaceManager
+        // Create WinCelebration (confetti on finish)
+        var celebrationObj = new GameObject("WinCelebration");
+        var winCelebration = celebrationObj.AddComponent<WinCelebration>();
+
+        // Wire RaceCamera and WinCelebration to RaceManager
         var rmSO = new SerializedObject(managers.raceManager);
         rmSO.FindProperty("raceCamera").objectReferenceValue = raceCamera;
+        rmSO.FindProperty("winCelebration").objectReferenceValue = winCelebration;
         rmSO.ApplyModifiedProperties();
 
         // Wire RaceCamera to FinishLine for celebration

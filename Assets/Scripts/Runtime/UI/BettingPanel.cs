@@ -28,6 +28,7 @@ namespace MarbleRace.Runtime.UI
         [SerializeField] private Button skipBetButton;
         [SerializeField] private TMP_Text timerText;
         [SerializeField] private TMP_Text balanceText;
+        [SerializeField] private RaceHUD raceHUD;
 
         private string _selectedMarbleId;
         private int _currentBetAmount;
@@ -72,6 +73,12 @@ namespace MarbleRace.Runtime.UI
 
             _marbles = raceManager.ActiveMarbles;
 
+            // Get odds for all marbles
+            var marbleIds = new List<string>();
+            foreach (var m in _marbles)
+                marbleIds.Add(m.MarbleId);
+            var odds = bettingManager.GetCurrentOdds(marbleIds);
+
             foreach (var marble in _marbles)
             {
                 var identity = marble.GetComponent<MarbleIdentity>();
@@ -82,7 +89,16 @@ namespace MarbleRace.Runtime.UI
                 var text = buttonObj.GetComponentInChildren<TMP_Text>();
                 var image = buttonObj.GetComponent<Image>();
 
-                if (text != null) text.text = identity.MarbleName;
+                // Show name, win rate, and odds
+                string label = identity.MarbleName;
+                var stat = RaceStatsManager.Instance?.GetMarbleStat(identity.MarbleId);
+                if (stat != null && stat.totalRaces > 0)
+                    label += $" ({stat.WinRate * 100f:F0}%)";
+
+                float marbleOdds = odds.ContainsKey(identity.MarbleId) ? odds[identity.MarbleId] : 8f;
+                label += $"\n{marbleOdds:F1}x";
+
+                if (text != null) text.text = label;
                 if (image != null) image.color = identity.MarbleColor;
 
                 string marbleId = identity.MarbleId;
@@ -139,6 +155,23 @@ namespace MarbleRace.Runtime.UI
                 confirmBetButton.interactable = false;
                 if (skipBetButton != null)
                     skipBetButton.interactable = false;
+
+                // Tell HUD about the player's bet
+                if (raceHUD != null)
+                {
+                    string betMarbleName = "";
+                    foreach (var m in _marbles)
+                    {
+                        var id = m.GetComponent<MarbleIdentity>();
+                        if (id != null && id.MarbleId == _selectedMarbleId)
+                        {
+                            betMarbleName = id.MarbleName;
+                            break;
+                        }
+                    }
+                    raceHUD.SetPlayerBet(betMarbleName, _currentBetAmount);
+                }
+
                 // Trigger race start after bet
                 GameManager.Instance.OnBettingComplete();
             }
