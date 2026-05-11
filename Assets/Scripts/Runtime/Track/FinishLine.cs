@@ -48,10 +48,6 @@ namespace MarbleRace.Runtime.Track
             // Camera focuses on winner
             if (raceCamera != null)
                 raceCamera.FocusOnMarble(winner.transform);
-
-            // Slow-mo for dramatic effect
-            Time.timeScale = 0.3f;
-            Time.fixedDeltaTime = 0.02f * Time.timeScale;
         }
     }
 }

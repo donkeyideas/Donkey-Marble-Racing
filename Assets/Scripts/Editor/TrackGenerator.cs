@@ -122,18 +122,17 @@ public static class TrackGenerator
         var spinnerPivot = new GameObject("Spinner_1");
         spinnerPivot.transform.parent = track.transform;
         spinnerPivot.transform.position = obs2Pos;
-        // Kinematic Rigidbody on pivot makes child trigger events fire on pivot's TrackHazard
+        // Kinematic Rigidbody on pivot — solid child collider physically pushes marbles
         var spinnerRb = spinnerPivot.AddComponent<Rigidbody>();
         spinnerRb.isKinematic = true;
-        // The spinning arm
-        var arm = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        // The spinning arm — solid collider so it reliably hits marbles
+        var arm = GameObject.CreatePrimitive(PrimitiveType.Cube);
         arm.name = "SpinnerArm";
         arm.transform.parent = spinnerPivot.transform;
         arm.transform.localPosition = Vector3.zero;
-        arm.transform.localScale = new Vector3(0.5f, 0.15f, 5.5f);
-        arm.transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
+        arm.transform.localScale = new Vector3(5f, 0.6f, 0.6f);
         arm.GetComponent<Renderer>().material = spinnerMat;
-        arm.GetComponent<Collider>().isTrigger = true;
+        // No isTrigger — kinematic Rigidbody + solid collider pushes marbles physically
         var spinnerHazard = spinnerPivot.AddComponent<TrackHazard>();
         SetHazardProperties(spinnerHazard, HazardType.Spinner, 4f, 120f);
 
