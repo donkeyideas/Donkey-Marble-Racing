@@ -16,8 +16,15 @@ namespace MarbleRace.Runtime.UI
         [SerializeField] private TMP_Text timerText;
         [SerializeField] private TMP_Text positionsText;
         [SerializeField] private TMP_Text playerBetIndicator;
+        [SerializeField] private TMP_Text trackNameText;
         [SerializeField] private TMP_Text countdownText;
         [SerializeField] private GameObject countdownPanel;
+
+        private void OnEnable()
+        {
+            if (trackNameText != null && raceManager != null)
+                trackNameText.text = raceManager.CurrentTrackName;
+        }
 
         private void Update()
         {

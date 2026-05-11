@@ -16,6 +16,7 @@ namespace MarbleRace.Runtime.Managers
         [Header("Config")]
         [SerializeField] private RaceSettings raceSettings;
         [SerializeField] private TrackData currentTrack;
+        [SerializeField] private PhysicsMaterial trackPhysicsMaterial;
 
         [Header("References")]
         [SerializeField] private MarbleSpawner marbleSpawner;
@@ -38,12 +39,15 @@ namespace MarbleRace.Runtime.Managers
         private bool _isRacing;
         private bool _firstFinishTriggered;
         private Coroutine _countdownCoroutine;
+        private GameObject _currentTrackObject;
+        private TrackType _currentTrackType;
 
         public RaceResult LastResult { get; private set; }
         public List<MarbleController> ActiveMarbles => _activeMarbles;
         public List<string> FinishOrder => _finishOrder;
         public bool IsRacing => _isRacing;
         public float RaceTime => _raceTimer;
+        public string CurrentTrackName => RuntimeTrackBuilder.GetTrackName(_currentTrackType);
 
         public void PrepareRace()
         {
@@ -53,6 +57,9 @@ namespace MarbleRace.Runtime.Managers
             _raceTimer = 0f;
             _isRacing = false;
             _firstFinishTriggered = false;
+
+            // Rebuild track with a random type
+            RebuildTrack();
 
             // Close the start gate
             if (startGate != null)
@@ -70,6 +77,25 @@ namespace MarbleRace.Runtime.Managers
                 marble.Freeze();
 
             onRacePrepared?.Raise();
+        }
+
+        private void RebuildTrack()
+        {
+            // Destroy old track
+            if (_currentTrackObject != null)
+                Destroy(_currentTrackObject);
+
+            // Also destroy any leftover track from the editor setup
+            var existingTrack = GameObject.Find("Track");
+            if (existingTrack != null)
+                Destroy(existingTrack);
+
+            // Pick a random track type
+            var types = new[] { TrackType.Downhill, TrackType.Zigzag, TrackType.Funnel, TrackType.Spiral, TrackType.MultiPath };
+            _currentTrackType = types[Random.Range(0, types.Length)];
+
+            // Build the new track
+            _currentTrackObject = RuntimeTrackBuilder.BuildTrack(_currentTrackType, trackPhysicsMaterial);
         }
 
         public void StartCountdown()
@@ -97,6 +123,9 @@ namespace MarbleRace.Runtime.Managers
             // Tell camera to follow marbles
             if (raceCamera != null)
                 raceCamera.SetMarbles(_activeMarbles);
+
+            // Start crowd ambience
+            AudioManager.Instance?.StartCrowdAmbience();
         }
 
         public void EndRace()
@@ -106,6 +135,10 @@ namespace MarbleRace.Runtime.Managers
             // Restore normal time (celebration sets slow-mo)
             Time.timeScale = 1f;
             Time.fixedDeltaTime = 0.02f;
+
+            // Stop crowd ambience, play cheer
+            AudioManager.Instance?.StopCrowdAmbience();
+            AudioManager.Instance?.PlayCrowdCheer();
 
             // Reset camera
             if (raceCamera != null)
@@ -157,6 +190,7 @@ namespace MarbleRace.Runtime.Managers
                         _firstFinishTriggered = true;
                         if (raceCamera != null)
                             raceCamera.FocusOnMarble(marble.transform);
+                        AudioManager.Instance?.PlayCrowdCheer();
                     }
 
                     if (_finishOrder.Count >= _activeMarbles.Count)

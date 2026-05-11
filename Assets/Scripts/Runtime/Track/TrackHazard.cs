@@ -19,6 +19,13 @@ namespace MarbleRace.Runtime.Track
         [SerializeField] private Vector3 forceDirection = Vector3.forward;
         [SerializeField] private float spinSpeed = 90f;
 
+        public void Initialize(HazardType type, float force, float spin)
+        {
+            hazardType = type;
+            forceStrength = force;
+            spinSpeed = spin;
+        }
+
         private void Update()
         {
             // Animate spinning hazards

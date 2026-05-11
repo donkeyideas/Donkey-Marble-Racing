@@ -421,6 +421,10 @@ public class GameSetupWizard : EditorWindow
         var startGateComp = Object.FindAnyObjectByType<StartGate>();
         if (startGateComp != null)
             rmSO.FindProperty("startGate").objectReferenceValue = startGateComp;
+        // Wire track physics material for runtime track generation
+        var existingTrackPhysMat = AssetDatabase.LoadAssetAtPath<PhysicsMaterial>("Assets/Data/TrackPhysics.physicMaterial");
+        if (existingTrackPhysMat != null)
+            rmSO.FindProperty("trackPhysicsMaterial").objectReferenceValue = existingTrackPhysMat;
         // raceHUD will be wired after UI is created
         rmSO.FindProperty("onRacePrepared").objectReferenceValue = events.onRacePrepared;
         rmSO.FindProperty("onCountdownStarted").objectReferenceValue = events.onCountdownStarted;
@@ -628,6 +632,7 @@ public class GameSetupWizard : EditorWindow
         var raceHud = CreatePanel(canvasObj.transform, "RaceHUD", new Color(0, 0, 0, 0));
         raceHud.SetActive(false);
         var timerText = CreateText(raceHud.transform, "Timer", "0.0s", 28, new Vector2(0, 420), Color.white);
+        var trackNameDisplay = CreateText(raceHud.transform, "TrackName", "", 22, new Vector2(0, 380), new Color(0.7f, 0.85f, 1f));
         var positionsText = CreateText(raceHud.transform, "Positions", "", 20, new Vector2(-380, 300), Color.white);
         positionsText.GetComponent<TMP_Text>().alignment = TextAlignmentOptions.TopLeft;
         var betIndicator = CreateText(raceHud.transform, "BetIndicator", "", 18, new Vector2(0, -400), Color.cyan);
@@ -644,6 +649,7 @@ public class GameSetupWizard : EditorWindow
         hudSO.FindProperty("timerText").objectReferenceValue = timerText.GetComponent<TMP_Text>();
         hudSO.FindProperty("positionsText").objectReferenceValue = positionsText.GetComponent<TMP_Text>();
         hudSO.FindProperty("playerBetIndicator").objectReferenceValue = betIndicator.GetComponent<TMP_Text>();
+        hudSO.FindProperty("trackNameText").objectReferenceValue = trackNameDisplay.GetComponent<TMP_Text>();
         hudSO.FindProperty("countdownText").objectReferenceValue = countdownText.GetComponent<TMP_Text>();
         hudSO.FindProperty("countdownPanel").objectReferenceValue = countdownPanel;
         hudSO.ApplyModifiedProperties();
