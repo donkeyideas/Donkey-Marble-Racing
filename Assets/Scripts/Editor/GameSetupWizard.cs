@@ -1103,7 +1103,7 @@ public class GameSetupWizard : EditorWindow
             "GameCanvas", "EventSystem", "Main Camera",
             "Hazards", "Sun Light", "Fill Light",
             "TrackLight_0", "TrackLight_1", "TrackLight_2", "TrackLight_3",
-            "PostProcessVolume"
+            "PostProcessVolume", "RaceStatsManager"
         };
 
         foreach (var name in objectNames)
