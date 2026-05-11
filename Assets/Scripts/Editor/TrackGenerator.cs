@@ -167,17 +167,14 @@ public static class TrackGenerator
         var boostHazard = boostPad.AddComponent<TrackHazard>();
         SetHazardProperties(boostHazard, HazardType.BoostPad, 6f, 0f);
 
-        // BUCKET at the end to catch marbles — large catch area
+        // BUCKET at the end to catch marbles — fully enclosed box
         Vector3 lastPoint = points[segmentCount];
-        Vector3 bucketCenter = lastPoint + new Vector3(0f, -3f, 5f);
-        float bucketWidth = 12f;
-        float bucketDepth = 10f;
-        float wallHeight = 10f;
-        MakeCube(track, "BucketFloor", bucketCenter, new Vector3(bucketWidth, 0.5f, bucketDepth), floorMat);
-        MakeCube(track, "BucketBack", bucketCenter + new Vector3(0, wallHeight / 2f, bucketDepth / 2f + 0.25f), new Vector3(bucketWidth, wallHeight, 0.5f), wallMat);
-        MakeCube(track, "BucketFront", bucketCenter + new Vector3(0, 0.75f, -bucketDepth / 2f - 0.25f), new Vector3(bucketWidth, 1f, 0.5f), wallMat);
-        MakeCube(track, "BucketLeft", bucketCenter + new Vector3(-bucketWidth / 2f - 0.25f, wallHeight / 2f, 0), new Vector3(0.5f, wallHeight, bucketDepth), wallMat);
-        MakeCube(track, "BucketRight", bucketCenter + new Vector3(bucketWidth / 2f + 0.25f, wallHeight / 2f, 0), new Vector3(0.5f, wallHeight, bucketDepth), wallMat);
+        Vector3 bucketCenter = lastPoint + new Vector3(0f, -2f, 2f);
+        MakeCube(track, "BucketFloor", bucketCenter, new Vector3(7, 0.5f, 5), floorMat);
+        MakeCube(track, "BucketBack", bucketCenter + new Vector3(0, 2f, 2.75f), new Vector3(7, 4f, 0.5f), wallMat);
+        MakeCube(track, "BucketFront", bucketCenter + new Vector3(0, 0.75f, -2.75f), new Vector3(7, 1f, 0.5f), wallMat);
+        MakeCube(track, "BucketLeft", bucketCenter + new Vector3(-3.75f, 2f, 0), new Vector3(0.5f, 4f, 5), wallMat);
+        MakeCube(track, "BucketRight", bucketCenter + new Vector3(3.75f, 2f, 0), new Vector3(0.5f, 4f, 5), wallMat);
 
         return track;
     }
@@ -242,8 +239,8 @@ public static class TrackGenerator
 
     public static Vector3 GetFinishLinePosition(TrackType type)
     {
-        // Bucket center: lastPoint + (0, -3, 5) — lastPoint at y=-4.5, z=80
-        return new Vector3(0f, -7.5f, 85f);
+        // Bucket is 2 below last curve point (y=-4.5) at z=82
+        return new Vector3(0f, -6.5f, 82f);
     }
 
     public static Vector3 GetStartGatePosition(TrackType type)
