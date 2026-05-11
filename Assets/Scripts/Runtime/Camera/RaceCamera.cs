@@ -113,8 +113,10 @@ namespace MarbleRace.Runtime.Camera
             foreach (var marble in _marbles)
             {
                 if (marble == null) continue;
-                // Ignore marbles that fell off the track (way below expected Y)
-                if (marble.transform.position.y < -15f) continue;
+                // Ignore marbles that fell off the track — bucket floor is ~y=-7
+                if (marble.transform.position.y < -9f) continue;
+                // Ignore marbles that flew way off to the sides
+                if (Mathf.Abs(marble.transform.position.x) > 15f) continue;
                 sum += marble.transform.position;
                 if (marble.transform.position.z > maxZ)
                     maxZ = marble.transform.position.z;
