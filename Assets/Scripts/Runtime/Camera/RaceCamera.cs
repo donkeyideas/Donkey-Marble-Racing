@@ -9,7 +9,8 @@ namespace MarbleRace.Runtime.Camera
     {
         private Vector3 _offset = new Vector3(0f, 6f, -10f);
         private Vector3 _defaultOffset = new Vector3(0f, 6f, -10f);
-        private Vector3 _ovalOffset = new Vector3(0f, 18f, -16f); // Much higher for wide oval curves
+        private Vector3 _serpentineOffset = new Vector3(0f, 18f, -16f); // Higher for wide S-curves
+        private Vector3 _racetrackOffset = new Vector3(0f, 45f, -5f); // Bird's eye for oval loop
         private float _smoothTime = 0.4f;
         private float _rotationSmooth = 3f;
 
@@ -33,19 +34,21 @@ namespace MarbleRace.Runtime.Camera
         /// </summary>
         public void SetTrackType(MarbleRace.Data.TrackType trackType)
         {
-            if (trackType == MarbleRace.Data.TrackType.Oval)
+            var cam = GetComponent<UnityEngine.Camera>();
+            switch (trackType)
             {
-                _offset = _ovalOffset;
-                var cam = GetComponent<UnityEngine.Camera>();
-                if (cam != null)
-                    cam.fieldOfView = 75f;
-            }
-            else
-            {
-                _offset = _defaultOffset;
-                var cam = GetComponent<UnityEngine.Camera>();
-                if (cam != null)
-                    cam.fieldOfView = 60f;
+                case MarbleRace.Data.TrackType.Serpentine:
+                    _offset = _serpentineOffset;
+                    if (cam != null) cam.fieldOfView = 75f;
+                    break;
+                case MarbleRace.Data.TrackType.Racetrack:
+                    _offset = _racetrackOffset;
+                    if (cam != null) cam.fieldOfView = 80f;
+                    break;
+                default:
+                    _offset = _defaultOffset;
+                    if (cam != null) cam.fieldOfView = 60f;
+                    break;
             }
         }
 

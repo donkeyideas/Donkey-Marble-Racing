@@ -9,7 +9,8 @@ namespace MarbleRace.Data
         Funnel,
         MultiPath,
         Spiral,
-        Oval
+        Serpentine,
+        Racetrack
     }
 
     [CreateAssetMenu(menuName = "MarbleRace/Data/Track Data")]

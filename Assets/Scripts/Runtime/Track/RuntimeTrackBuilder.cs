@@ -33,9 +33,13 @@ namespace MarbleRace.Runtime.Track
                     floorColor = new Color(0.12f, 0.22f, 0.12f); // forest green
                     wallColor = new Color(0.05f, 0.1f, 0.05f);
                     break;
-                case TrackType.Oval:
+                case TrackType.Serpentine:
                     floorColor = new Color(0.28f, 0.2f, 0.1f); // golden brown
                     wallColor = new Color(0.14f, 0.1f, 0.05f);
+                    break;
+                case TrackType.Racetrack:
+                    floorColor = new Color(0.18f, 0.18f, 0.18f); // asphalt dark gray
+                    wallColor = new Color(0.1f, 0.1f, 0.1f);
                     break;
                 default: // Downhill
                     floorColor = new Color(0.15f, 0.18f, 0.3f); // original blue-gray
@@ -46,7 +50,8 @@ namespace MarbleRace.Runtime.Track
             var wallMat = MakeMat("WallMat", wallColor, 0.6f, 0.85f);
 
             // More segments for tighter curves, prevents gaps between blocks
-            int segmentCount = (type == TrackType.Zigzag || type == TrackType.Spiral || type == TrackType.Oval) ? 100 : 80;
+            int segmentCount = (type == TrackType.Zigzag || type == TrackType.Spiral || type == TrackType.Serpentine) ? 100
+                : type == TrackType.Racetrack ? 140 : 80;
             float trackWidth = 5f;
             float wallHeight = 3.5f;
 
@@ -65,7 +70,8 @@ namespace MarbleRace.Runtime.Track
                 case TrackType.Spiral: neonColor = new Color(0.2f, 0.6f, 1f); break;
                 case TrackType.Funnel: neonColor = new Color(0.7f, 0.3f, 1f); break;
                 case TrackType.MultiPath: neonColor = new Color(0.2f, 1f, 0.4f); break;
-                case TrackType.Oval: neonColor = new Color(1f, 0.8f, 0.2f); break;
+                case TrackType.Serpentine: neonColor = new Color(1f, 0.8f, 0.2f); break;
+                case TrackType.Racetrack: neonColor = new Color(1f, 0.1f, 0.1f); break; // racing red
                 default: neonColor = new Color(0.3f, 0.7f, 1f); break;
             }
             var neonMat = MakeEmissiveMat("NeonMat", neonColor, neonColor, 3f, 0f, 0.95f);
@@ -202,26 +208,40 @@ namespace MarbleRace.Runtime.Track
 
             switch (_currentType)
             {
-                case TrackType.Oval:
-                    // Oval track: elliptical path that slopes downward.
-                    // Makes 2 full laps of an elongated oval while descending.
-                    // The z coordinate still goes 0→80 for finish detection.
-                    float laps = 2f;
-                    float angle = t * laps * Mathf.PI * 2f;
-                    float radiusX = 12f; // wide oval
-                    float radiusZ = 6f;  // shorter on z-axis (makes it oval)
-
-                    // Oval centered around z=40, x=0
-                    x = Mathf.Sin(angle) * radiusX;
-                    float ovalZ = 40f + Mathf.Cos(angle) * radiusZ;
-
-                    // But we need z to go from 0 to 80 for the finish line detection.
-                    // Solution: use the oval for x offset, keep z linear.
+                case TrackType.Serpentine:
+                    // Snake-like S-curves with linear z progression
+                    float serpLaps = 2f;
+                    float serpAngle = t * serpLaps * Mathf.PI * 2f;
+                    float serpRadiusX = 12f;
                     z = t * trackLength;
-                    x = Mathf.Sin(angle) * radiusX;
-
-                    // Continuous downward slope — steeper than other tracks since it's longer in XZ
+                    x = Mathf.Sin(serpAngle) * serpRadiusX;
                     y = Mathf.Lerp(6.0f, -6.0f, t);
+                    break;
+
+                case TrackType.Racetrack:
+                    // True horse-racing oval: 1.5 laps around an ellipse, then exit ramp to z=82.
+                    // Oval centered at (0, y, 40), semi-major=30 (Z), semi-minor=14 (X).
+                    // Start at bottom of oval (z=10), after 1.5 laps end at top (z=70), exit straight.
+                    float ovalPhase = 0.9f; // 90% of track is the oval loop
+                    if (t <= ovalPhase)
+                    {
+                        float ovalT = t / ovalPhase; // 0→1 over the oval portion
+                        float totalAngle = ovalT * 1.5f * Mathf.PI * 2f; // 1.5 laps
+                        float startAngle = -Mathf.PI / 2f; // start at bottom of oval (z=10)
+                        float currentAngle = startAngle + totalAngle;
+                        float rX = 14f; // semi-minor axis (X width)
+                        float rZ = 30f; // semi-major axis (Z length)
+                        x = rX * Mathf.Cos(currentAngle);
+                        z = 40f + rZ * Mathf.Sin(currentAngle);
+                    }
+                    else
+                    {
+                        // Exit ramp: straight from (0, y, 70) to (0, y, 82)
+                        float exitT = (t - ovalPhase) / (1f - ovalPhase); // 0→1 over exit
+                        x = Mathf.Lerp(0f, 0f, exitT);
+                        z = Mathf.Lerp(70f, 82f, exitT);
+                    }
+                    y = Mathf.Lerp(4.0f, -6.0f, t);
                     break;
 
                 case TrackType.Zigzag:
@@ -269,7 +289,8 @@ namespace MarbleRace.Runtime.Track
                 case TrackType.Spiral: return "Spiral Mountain";
                 case TrackType.Funnel: return "The Funnel";
                 case TrackType.MultiPath: return "Split Path";
-                case TrackType.Oval: return "Oval Descent";
+                case TrackType.Serpentine: return "Serpentine";
+                case TrackType.Racetrack: return "The Racetrack";
                 default: return "Downhill Rush";
             }
         }

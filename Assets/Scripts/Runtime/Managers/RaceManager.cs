@@ -108,7 +108,7 @@ namespace MarbleRace.Runtime.Managers
                 Destroy(existingTrack);
 
             // Pick a random track type
-            var types = new[] { TrackType.Downhill, TrackType.Zigzag, TrackType.Funnel, TrackType.Spiral, TrackType.MultiPath, TrackType.Oval };
+            var types = new[] { TrackType.Downhill, TrackType.Zigzag, TrackType.Funnel, TrackType.Spiral, TrackType.MultiPath, TrackType.Serpentine, TrackType.Racetrack };
             _currentTrackType = types[Random.Range(0, types.Length)];
 
             // Build the new track
