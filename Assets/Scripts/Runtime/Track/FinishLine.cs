@@ -5,13 +5,15 @@ using MarbleRace.Runtime.Camera;
 
 namespace MarbleRace.Runtime.Track
 {
+    /// <summary>
+    /// Kept for backwards compatibility. Finish detection is now handled
+    /// by RaceManager using position-based checks in Update().
+    /// </summary>
     [RequireComponent(typeof(Collider))]
     public class FinishLine : MonoBehaviour
     {
         [SerializeField] private RaceManager raceManager;
         [SerializeField] private RaceCamera raceCamera;
-
-        private bool _firstFinishTriggered;
 
         private void Awake()
         {
@@ -19,45 +21,6 @@ namespace MarbleRace.Runtime.Track
             col.isTrigger = true;
         }
 
-        public void ResetForNewRace()
-        {
-            _firstFinishTriggered = false;
-        }
-
-        private void OnTriggerEnter(Collider other)
-        {
-            HandleMarbleFinish(other);
-        }
-
-        private void OnTriggerStay(Collider other)
-        {
-            HandleMarbleFinish(other);
-        }
-
-        private void HandleMarbleFinish(Collider other)
-        {
-            if (!other.CompareTag("Marble")) return;
-
-            var marble = other.GetComponent<MarbleController>();
-            if (marble == null || marble.HasFinished) return;
-
-            marble.MarkFinished();
-
-            // First marble to finish triggers celebration
-            if (!_firstFinishTriggered)
-            {
-                _firstFinishTriggered = true;
-                TriggerCelebration(marble);
-            }
-
-            raceManager.RegisterFinish(marble);
-        }
-
-        private void TriggerCelebration(MarbleController winner)
-        {
-            // Camera focuses on winner
-            if (raceCamera != null)
-                raceCamera.FocusOnMarble(winner.transform);
-        }
+        public void ResetForNewRace() { }
     }
 }

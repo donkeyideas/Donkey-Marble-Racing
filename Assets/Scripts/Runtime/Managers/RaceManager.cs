@@ -36,6 +36,7 @@ namespace MarbleRace.Runtime.Managers
         private List<string> _finishOrder = new List<string>();
         private float _raceTimer;
         private bool _isRacing;
+        private bool _firstFinishTriggered;
         private Coroutine _countdownCoroutine;
 
         public RaceResult LastResult { get; private set; }
@@ -50,6 +51,7 @@ namespace MarbleRace.Runtime.Managers
             _finishOrder.Clear();
             _raceTimer = 0f;
             _isRacing = false;
+            _firstFinishTriggered = false;
 
             // Close the start gate
             if (startGate != null)
@@ -124,16 +126,13 @@ namespace MarbleRace.Runtime.Managers
 
         public void RegisterFinish(MarbleController marble)
         {
+            // Legacy — kept for API compatibility, detection now in Update
             if (_finishOrder.Contains(marble.MarbleId)) return;
+            if (marble.HasFinished) return;
 
+            marble.MarkFinished();
             _finishOrder.Add(marble.MarbleId);
             onMarbleFinished?.Raise(marble.gameObject);
-
-            // End race once all marbles have finished
-            if (_finishOrder.Count >= _activeMarbles.Count)
-            {
-                GameManager.Instance.OnRaceFinished();
-            }
         }
 
         private void Update()
@@ -142,9 +141,33 @@ namespace MarbleRace.Runtime.Managers
 
             _raceTimer += Time.deltaTime;
 
+            // Position-based finish detection — any marble past z=78 is in the bucket zone
+            foreach (var marble in _activeMarbles)
+            {
+                if (marble == null || marble.HasFinished) continue;
+                if (marble.transform.position.z >= 78f)
+                {
+                    marble.MarkFinished();
+                    _finishOrder.Add(marble.MarbleId);
+                    onMarbleFinished?.Raise(marble.gameObject);
+
+                    if (!_firstFinishTriggered)
+                    {
+                        _firstFinishTriggered = true;
+                        if (raceCamera != null)
+                            raceCamera.FocusOnMarble(marble.transform);
+                    }
+
+                    if (_finishOrder.Count >= _activeMarbles.Count)
+                    {
+                        GameManager.Instance.OnRaceFinished();
+                        return;
+                    }
+                }
+            }
+
             if (_raceTimer >= raceSettings.raceTimeout)
             {
-                // Timeout — determine positions by track progress
                 GameManager.Instance.OnRaceFinished();
             }
         }
