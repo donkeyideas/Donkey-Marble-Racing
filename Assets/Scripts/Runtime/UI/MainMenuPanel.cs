@@ -19,6 +19,8 @@ namespace MarbleRace.Runtime.UI
 
         [Header("References")]
         [SerializeField] private EconomyManager economyManager;
+        [SerializeField] private RaceManager raceManager;
+        [SerializeField] private TrackSelectionPanel trackSelection;
 
         private void OnEnable()
         {
@@ -43,6 +45,10 @@ namespace MarbleRace.Runtime.UI
 
         private void OnPlay()
         {
+            // Pass track selection to RaceManager before starting
+            if (raceManager != null && trackSelection != null)
+                raceManager.SetSelectedTrack(trackSelection.SelectedTrack);
+
             if (GameManager.Instance != null)
                 GameManager.Instance.RequestNewRace();
             else

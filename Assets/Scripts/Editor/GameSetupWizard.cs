@@ -561,6 +561,30 @@ public class GameSetupWizard : EditorWindow
         var settingsBtn = CreateButton(mainMenu.transform, "SettingsButton", "SETTINGS", new Vector2(0, -350), new Vector2(300, 60),
             new Color(0.4f, 0.4f, 0.5f));
 
+        // --- Track Selection (on main menu) ---
+        var trackSelectContainer = new GameObject("TrackSelection");
+        var tsRT = trackSelectContainer.AddComponent<RectTransform>();
+        tsRT.SetParent(mainMenu.transform, false);
+        tsRT.anchoredPosition = new Vector2(0, 50);
+        tsRT.sizeDelta = new Vector2(500, 60);
+
+        var tsLabel = CreateText(trackSelectContainer.transform, "TrackLabel", "TRACK:", 20, new Vector2(-200, 0), Color.gray);
+        var tsTrackName = CreateText(trackSelectContainer.transform, "TrackName", "RANDOM", 28, new Vector2(0, 0), Color.white);
+
+        var tsPrevBtn = CreateButton(trackSelectContainer.transform, "PrevTrack", "<", new Vector2(-160, 0), new Vector2(50, 50),
+            new Color(0.3f, 0.3f, 0.4f));
+        var tsNextBtn = CreateButton(trackSelectContainer.transform, "NextTrack", ">", new Vector2(160, 0), new Vector2(50, 50),
+            new Color(0.3f, 0.3f, 0.4f));
+        tsPrevBtn.AddComponent<ButtonFeedback>();
+        tsNextBtn.AddComponent<ButtonFeedback>();
+
+        var trackSelectionScript = trackSelectContainer.AddComponent<TrackSelectionPanel>();
+        var tsSO = new SerializedObject(trackSelectionScript);
+        tsSO.FindProperty("selectedTrackText").objectReferenceValue = tsTrackName.GetComponent<TMP_Text>();
+        tsSO.FindProperty("prevButton").objectReferenceValue = tsPrevBtn.GetComponent<Button>();
+        tsSO.FindProperty("nextButton").objectReferenceValue = tsNextBtn.GetComponent<Button>();
+        tsSO.ApplyModifiedProperties();
+
         // Add animations and button feedback to main menu
         mainMenu.AddComponent<PanelAnimator>();
         playBtn.AddComponent<ButtonFeedback>();
@@ -574,6 +598,8 @@ public class GameSetupWizard : EditorWindow
         mmSO.FindProperty("dailyRewardButton").objectReferenceValue = dailyBtn.GetComponent<Button>();
         mmSO.FindProperty("coinBalanceText").objectReferenceValue = coinDisplay.GetComponent<TMP_Text>();
         mmSO.FindProperty("economyManager").objectReferenceValue = managers.economyManager;
+        mmSO.FindProperty("raceManager").objectReferenceValue = managers.raceManager;
+        mmSO.FindProperty("trackSelection").objectReferenceValue = trackSelectionScript;
         mmSO.ApplyModifiedProperties();
 
         // --- Betting Panel ---

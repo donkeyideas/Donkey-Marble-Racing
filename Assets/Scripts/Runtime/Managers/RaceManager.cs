@@ -46,6 +46,7 @@ namespace MarbleRace.Runtime.Managers
         private Coroutine _countdownCoroutine;
         private GameObject _currentTrackObject;
         private TrackType _currentTrackType;
+        private TrackType? _selectedTrackType = null; // null = random
 
         private const float FINISH_GRACE_PERIOD = 8f; // End race 8s after first marble finishes
 
@@ -55,6 +56,11 @@ namespace MarbleRace.Runtime.Managers
         public bool IsRacing => _isRacing;
         public float RaceTime => _raceTimer;
         public string CurrentTrackName => RuntimeTrackBuilder.GetTrackName(_currentTrackType);
+
+        public void SetSelectedTrack(TrackType? trackType)
+        {
+            _selectedTrackType = trackType;
+        }
 
         public void PrepareRace()
         {
@@ -107,9 +113,16 @@ namespace MarbleRace.Runtime.Managers
             if (existingTrack != null)
                 Destroy(existingTrack);
 
-            // Pick a random track type
-            var types = new[] { TrackType.Downhill, TrackType.Zigzag, TrackType.Funnel, TrackType.Spiral, TrackType.MultiPath, TrackType.Serpentine, TrackType.Racetrack };
-            _currentTrackType = types[Random.Range(0, types.Length)];
+            // Use selected track or pick random
+            if (_selectedTrackType.HasValue)
+            {
+                _currentTrackType = _selectedTrackType.Value;
+            }
+            else
+            {
+                var types = new[] { TrackType.Downhill, TrackType.Zigzag, TrackType.Funnel, TrackType.Spiral, TrackType.MultiPath, TrackType.Serpentine, TrackType.Racetrack };
+                _currentTrackType = types[Random.Range(0, types.Length)];
+            }
 
             // Build the new track
             _currentTrackObject = RuntimeTrackBuilder.BuildTrack(_currentTrackType, trackPhysicsMaterial);

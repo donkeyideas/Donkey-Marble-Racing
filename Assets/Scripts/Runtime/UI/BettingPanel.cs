@@ -86,15 +86,8 @@ namespace MarbleRace.Runtime.UI
 
                 if (image != null) image.color = identity.MarbleColor;
 
-                // Show win-rate stat if available
                 if (text != null)
-                {
-                    var stats = RaceStatsManager.Instance?.GetMarbleStat(identity.MarbleId);
-                    if (stats != null && stats.totalRaces > 0)
-                        text.text = $"{Mathf.RoundToInt(stats.WinRate * 100)}%";
-                    else
-                        text.text = "";
-                }
+                    text.text = "";
 
                 string marbleId = identity.MarbleId;
                 button.onClick.AddListener(() => SelectMarble(marbleId));
