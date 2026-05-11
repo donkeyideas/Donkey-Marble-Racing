@@ -69,6 +69,9 @@ namespace MarbleRace.Runtime.Marble
             if (_rb != null)
             {
                 _rb.isKinematic = false;
+                // Initial launch boost for exciting start
+                float boost = Random.Range(1.5f, 2.5f) * _nudgeStrength;
+                _rb.AddForce(Vector3.forward * boost, ForceMode.Impulse);
             }
             ScheduleNextNudge();
         }
@@ -153,6 +156,13 @@ namespace MarbleRace.Runtime.Marble
                 if (impactForce > 1f)
                 {
                     Managers.AudioManager.Instance?.PlayMarbleCollision();
+                }
+                // Camera shake on big impacts
+                if (impactForce > 3f)
+                {
+                    var cam = FindAnyObjectByType<Camera.RaceCamera>();
+                    if (cam != null)
+                        cam.Shake(impactForce * 0.02f, 0.15f);
                 }
             }
         }

@@ -109,6 +109,22 @@ namespace MarbleRace.Runtime.Track
             boostPad.GetComponent<BoxCollider>().isTrigger = true;
             boostPad.AddComponent<TrackHazard>().Initialize(HazardType.BoostPad, 6f, 0f);
 
+            // Start line marking
+            var startLineMat = MakeEmissiveMat("StartLineMat", Color.white, Color.white, 1f, 0f, 0.9f);
+            Vector3 startLinePos = CurvePoint(0.005f);
+            Vector3 startLineAhead = CurvePoint(0.015f);
+            Quaternion startLineRot = Quaternion.LookRotation((startLineAhead - startLinePos).normalized, Vector3.up);
+            var startLine = MakeCube(track, "StartLine", startLinePos + new Vector3(0, 0.26f, 0), new Vector3(trackWidth, 0.02f, 0.3f), startLineMat, null);
+            startLine.transform.rotation = startLineRot;
+
+            // Finish line marking (just before the bucket drop)
+            var finishLineMat = MakeEmissiveMat("FinishLineMat", new Color(1f, 0.85f, 0f), new Color(1f, 0.9f, 0f), 2f, 0f, 0.9f);
+            Vector3 finishLinePos = CurvePoint(0.96f);
+            Vector3 finishLineAhead = CurvePoint(0.97f);
+            Quaternion finishLineRot = Quaternion.LookRotation((finishLineAhead - finishLinePos).normalized, Vector3.up);
+            var finishLine = MakeCube(track, "FinishLine", finishLinePos + new Vector3(0, 0.26f, 0), new Vector3(trackWidth, 0.02f, 0.4f), finishLineMat, null);
+            finishLine.transform.rotation = finishLineRot;
+
             // Bucket
             Vector3 lastPoint = points[segmentCount];
             Vector3 bucketCenter = lastPoint + new Vector3(0f, -2f, 2f);
