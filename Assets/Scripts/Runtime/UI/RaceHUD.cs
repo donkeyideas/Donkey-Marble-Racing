@@ -84,7 +84,7 @@ namespace MarbleRace.Runtime.UI
                     if (identity != null && identity.MarbleId == marbleId)
                     {
                         string hex = ColorUtility.ToHtmlStringRGB(identity.MarbleColor);
-                        sb.AppendLine($"{position}. <color=#{hex}>\u25cf</color> \u2713");
+                        sb.AppendLine($"{position}. <color=#{hex}>\u25cf</color>");
                         position++;
                         break;
                     }
